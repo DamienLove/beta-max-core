@@ -1,25 +1,26 @@
 [BETA MAX // SESSION RESTORATION FILE]
-[LAST_UPDATE]: 2026-01-05
+[LAST_UPDATE]: 2026-01-06
 [ARCHITECT]: Damien Nichols (Sole Creator)
 [AI_ROLE]: Lead Engineering Assistant
 
 === 1. CURRENT PROJECT STATE ===
 - Directory: C:\Projects\beta-max-core
-- Framework: React 18 + Vite
-- Styling: Tailwind CSS (Configured & Active)
-- Icons: Lucide-React
-- Native: Capacitor (Android)
+- Framework: Native Android (Kotlin + Jetpack Compose)
+- Gradle: 8.11 (Downgraded from 9.0-m1 for stability)
+- Kotlin: 2.0.0 (Compose Compiler Plugin active)
+- SDK: Compile/Target 35 (Required by AndroidX Core 1.15.0)
+- UI: Jetpack Compose (Cyberpunk / Retro-future aesthetic)
+- Data: Room Database (Mission entity implemented)
 
 === 2. CRITICAL PROTOCOLS ===
 [DEPLOYMENT]:
-- Source of Truth: GitHub repo `beta-max-core`.
-- Standard Flow: `npm run build` -> `npx cap sync` -> `npx cap open android`.
+- Standard Flow: `./gradlew assembleDebug` -> `adb install` -> `adb shell am start`.
+- Artifacts: `app/build/outputs/apk/debug/app-debug.apk`.
+- Package ID: `com.betamax.core`.
 
 [TROUBLESHOOTING]:
-- "Ghost Files" / Config Sync Issues: EXECUTE "SCORCHED EARTH" PROTOCOL.
-  1. DELETE `android/` folder.
-  2. `npx cap add android`.
-  3. `npx cap sync`.
+- AAPT Errors: Ensure `mipmap` and `drawable` resources exist for icons.
+- Kapt/Kotlin 2.0: Kapt falls back to 1.9 but works for Room.
 
 === 3. FEATURE MANIFEST (IMPLEMENTED) ===
 - [x] UI: Retro-future "Deck" aesthetics (CRT scanlines, Tailwind styles).

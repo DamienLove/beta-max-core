@@ -2,25 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.compose.compiler)
-    id("com.google.devtools.ksp") version "2.0.0-1.0.21" apply false // Adding KSP via logic here since alias is tricky without plugin block setup
+    alias(libs.plugins.ksp)
 }
-
-// Manually applying KSP plugin since I didn't add it to toml yet, but Room needs it or KAPT
-apply(plugin = "com.android.application")
-apply(plugin = "org.jetbrains.kotlin.android")
-// Using KAPT for simplicity if KSP setup is complex in file-only mode, but KSP is preferred. 
-// Let's stick to KAPT for Room for now to minimize plugin complexity or add KSP properly.
-// Actually, let's use standard kapt for now.
-apply(plugin = "kotlin-kapt")
 
 android {
     namespace = "com.betamax.core"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.betamax.core"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -49,9 +41,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -74,7 +63,7 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    kapt(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

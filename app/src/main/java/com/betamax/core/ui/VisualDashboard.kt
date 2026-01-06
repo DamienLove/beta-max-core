@@ -1,80 +1,261 @@
 package com.betamax.core.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.betamax.core.R
 import com.betamax.core.data.Mission
 import com.betamax.core.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VisualDashboard() {
-    // Mock Data
-    val missions = listOf(
-        Mission("PRJ-01", "NEBULA_STREAM", "BETA_ACTIVE", 142, 500, "Next-gen audio streaming.", "nebula_issues"),
+    val featuredMission = Mission("PRJ-01", "NEBULA_STREAM", "BETA_ACTIVE", 142, 500, "Next-gen audio streaming.", "nebula_issues")
+    val newMissions = listOf(
+        Mission("PRJ-02", "TITAN_OS", "ALPHA_UNSTABLE", 12, 1500, "Experimental Android launcher.", "titan_core"),
+        Mission("PRJ-03", "CYBER_DOCK", "GOLD_MASTER", 0, 100, "Legacy docking station software.", "cyber_dock"),
+        Mission("PRJ-04", "HYPER_LOOP", "BETA_CLOSED", 5, 2000, "Transport logistics network.", "hyper_loop")
+    )
+    val topPaying = listOf(
+        Mission("PRJ-05", "VOID_NET", "ALPHA_CRITICAL", 99, 5000, "Deep space comms.", "void_net"),
         Mission("PRJ-02", "TITAN_OS", "ALPHA_UNSTABLE", 12, 1500, "Experimental Android launcher.", "titan_core")
     )
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Slate900, Color.Black)))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            HeaderSection()
-        }
-        
-        items(missions) { mission ->
-            MissionCard(mission)
+    Scaffold(
+        topBar = {
+            Column(modifier = Modifier.background(Color.Black).padding(bottom = 8.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        contentDescription = "Beta Max Logo",
+                        modifier = Modifier.size(40.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "BETA MAX",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Cyan400,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                }
+
+                TextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = { Text("Search Missions...", color = Cyan900) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Cyan500) },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Slate900,
+                        unfocusedContainerColor = Slate900,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        focusedTextColor = Cyan400,
+                        cursorColor = Cyan400
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(50.dp)
+                        .clip(RoundedCornerShape(25.dp))
+                )
+            }
+        },
+        containerColor = Color.Black
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Brush.verticalGradient(listOf(Color.Black, Slate950))),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            item {
+                Text(
+                    "FEATURED", 
+                    style = MaterialTheme.typography.labelSmall, 
+                    color = Cyan500, 
+                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
+                )
+                HeroCard(featuredMission)
+            }
+
+            item {
+                MissionControlStats()
+            }
+
+            item {
+                SectionHeader("New Arrivals")
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(newMissions) { mission ->
+                        AppStoreCard(mission)
+                    }
+                }
+            }
+
+            item {
+                SectionHeader("High Payouts")
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(topPaying) { mission ->
+                        AppStoreCard(mission)
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
-fun HeaderSection() {
-    Column(modifier = Modifier.padding(bottom = 16.dp)) {
-        Text("MISSION CONTROL", style = MaterialTheme.typography.titleLarge, color = Cyan400)
-        Text("STATUS: ONLINE", style = MaterialTheme.typography.labelSmall, color = Cyan900)
-    }
+fun SectionHeader(title: String) {
+    Text(
+        title,
+        style = MaterialTheme.typography.titleMedium,
+        color = Color.White,
+        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 12.dp)
+    )
 }
 
 @Composable
-fun MissionCard(mission: Mission) {
+fun HeroCard(mission: Mission) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Slate900.copy(alpha = 0.5f)),
-        border = BorderStroke(1.dp, Cyan900),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Slate900),
+        border = BorderStroke(1.dp, Brush.linearGradient(listOf(Cyan500, Fuchsia500)))
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Brush.horizontalGradient(listOf(Cyan900.copy(alpha = 0.3f), Fuchsia900.copy(alpha = 0.3f))))
+            )
+            
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
             ) {
-                Text(mission.name, style = MaterialTheme.typography.titleLarge, color = Color.White)
                 Badge(mission.status)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(mission.name, style = MaterialTheme.typography.titleLarge, color = Color.White)
+                Text(mission.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             }
-            Text(mission.id, style = MaterialTheme.typography.labelSmall, color = Cyan500)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(mission.description, style = MaterialTheme.typography.bodyLarge, color = Color.Gray)
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("${mission.payout} CR", color = Amber400)
-                Text("${mission.bugs} ANOMALIES", color = Cyan400)
+        }
+    }
+}
+
+@Composable
+fun AppStoreCard(mission: Mission) {
+    Card(
+        modifier = Modifier
+            .width(160.dp)
+            .height(180.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Slate900),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (mission.payout > 1000) Amber500 else Cyan500)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(mission.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, color = Color.White)
+            Text("By BetaMax Core", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Spacer(modifier = Modifier.weight(1f))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Star, contentDescription = null, tint = Amber400, modifier = Modifier.size(12.dp))
+                Text(" 4.8", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                Spacer(modifier = Modifier.weight(1f))
+                Text("${mission.payout} CR", style = MaterialTheme.typography.labelSmall, color = Amber400, fontWeight = FontWeight.Bold)
             }
+        }
+    }
+}
+
+@Composable
+fun MissionControlStats() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("MISSION CONTROL", style = MaterialTheme.typography.labelSmall, color = Cyan500, modifier = Modifier.padding(bottom = 8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            BetaMaxStatCard(
+                label = "Active",
+                value = "3",
+                color = Cyan400,
+                modifier = Modifier.weight(1f)
+            )
+            BetaMaxStatCard(
+                label = "Earned",
+                value = "4.5k",
+                color = Amber400,
+                modifier = Modifier.weight(1f)
+            )
+            BetaMaxStatCard(
+                label = "Rank",
+                value = "TP",
+                color = Fuchsia500,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun BetaMaxStatCard(
+    label: String,
+    value: String,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = Slate900.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(label, style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(value, style = MaterialTheme.typography.titleLarge, color = color)
         }
     }
 }
