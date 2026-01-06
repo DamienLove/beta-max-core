@@ -1,0 +1,43 @@
+[BETA MAX // SESSION RESTORATION FILE]
+[LAST_UPDATE]: 2026-01-05
+[ARCHITECT]: Damien Nichols (Sole Creator)
+[AI_ROLE]: Lead Engineering Assistant
+
+=== 1. CURRENT PROJECT STATE ===
+- Directory: C:\Projects\beta-max-core
+- Framework: React 18 + Vite
+- Styling: Tailwind CSS (Configured & Active)
+- Icons: Lucide-React
+- Native: Capacitor (Android)
+
+=== 2. CRITICAL PROTOCOLS ===
+[DEPLOYMENT]:
+- Source of Truth: GitHub repo `beta-max-core`.
+- Standard Flow: `npm run build` -> `npx cap sync` -> `npx cap open android`.
+
+[TROUBLESHOOTING]:
+- "Ghost Files" / Config Sync Issues: EXECUTE "SCORCHED EARTH" PROTOCOL.
+  1. DELETE `android/` folder.
+  2. `npx cap add android`.
+  3. `npx cap sync`.
+
+=== 3. FEATURE MANIFEST (IMPLEMENTED) ===
+- [x] UI: Retro-future "Deck" aesthetics (CRT scanlines, Tailwind styles).
+- [x] Terminal Mode: Functional CLI with `scan`, `list`, `help`.
+- [x] Visual Mode: Dashboard with Stats and Mission Cards.
+- [x] Query Core: Mock AI translation of natural language to BMQL (SQL-like).
+
+=== 4. ACTIVE CONTEXT / LORE ===
+- The project evolved through several pivots (Vanguard, Apex, Vector) before settling on **Beta Max**.
+- The aesthetic is "Synthwave/Cyberpunk" meeting "Retro-Tech".
+- Key Terminology:
+  - QA -> "Recon"
+  - Bug Report -> "Anomaly Log"
+  - Database -> "The Archives"
+  - Query Syntax -> "BMQL" (Beta Max Query Language)
+
+=== 5. NEXT ACTIONS (ON RESUME) ===
+- Iterate on the "Query Core" to make it more interactive?
+- Set up the Capacitor Android bridge?
+- Refine the "Mission Briefing" UI?
+- Wait for Architect instructions.
