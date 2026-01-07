@@ -26,8 +26,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.betamax.core.ui.theme.*
 
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.betamax.core.data.ReconScanner
+import com.betamax.core.ui.theme.*
+import kotlinx.coroutines.launch
+
 @Composable
-fun TerminalScreen() {
+fun TerminalScreen(viewModel: DashboardViewModel = viewModel()) {
+    val missions by viewModel.missions.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val scanner = remember { ReconScanner(context) }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -35,7 +47,7 @@ fun TerminalScreen() {
             .padding(16.dp)
     ) {
         RetroWindow {
-            TerminalContent()
+            TerminalContent(missions, scanner, scope)
         }
     }
 }
@@ -111,7 +123,11 @@ fun WindowButton(color: Color) {
 }
 
 @Composable
-fun TerminalContent() {
+fun TerminalContent(
+    missions: List<com.betamax.core.data.Mission>,
+    scanner: ReconScanner,
+    scope: kotlinx.coroutines.CoroutineScope
+) {
     var input by remember { mutableStateOf("") }
     var lines by remember { mutableStateOf(listOf(
         "BETA MAX [Version 2.0.0 NATIVE]",
@@ -133,16 +149,54 @@ fun TerminalContent() {
         val newLines = lines.toMutableList()
         newLines.add("> $cmd")
         
-        when (cmd.lowercase()) {
-            "help" -> {
+        when {
+            cmd.lowercase() == "help" -> {
                 newLines.add("AVAILABLE COMMANDS:")
-                newLines.add("  scan [target]    - Scan repository for anomalies")
+                newLines.add("  scan --local     - Scan device for installed beta channels")
+                newLines.add("  missions         - List active recruitment protocols")
                 newLines.add("  clear            - Clear terminal screen")
             }
-            "clear" -> {
+            cmd.lowercase() == "clear" -> {
                 lines = listOf()
                 input = ""
                 return
+            }
+            cmd.lowercase() == "missions" -> {
+                if (missions.isEmpty()) {
+                    newLines.add("NO ACTIVE PROTOCOLS FOUND.")
+                } else {
+                    newLines.add("ACTIVE MISSIONS:")
+                    missions.forEach { m ->
+                        val typeIndicator = if (m.type == "COMMUNITY") "[COMMUNITY]" else "[OFFICIAL]"
+                        newLines.add("  [${m.id}] $typeIndicator ${m.name} - ${m.rewardValue} CR")
+                    }
+                }
+            }
+            cmd.lowercase() == "scan --local" -> {
+                newLines.add("INITIATING DEVICE RECON...")
+                newLines.add("QUERYING PACKAGE MANAGER...")
+                lines = newLines
+                
+                scope.launch {
+                    val results = scanner.scanDevice()
+                    val resultLines = lines.toMutableList()
+                    if (results.isEmpty()) {
+                         resultLines.add("SCAN COMPLETE: 0 BETA SIGNALS DETECTED.")
+                    } else {
+                         resultLines.add("SCAN COMPLETE: ${results.size} SIGNALS FOUND.")
+                         results.forEach { app ->
+                             resultLines.add("  [FOUND] ${app.name} (${app.versionName})")
+                             resultLines.add("   >> ${app.packageId}")
+                             resultLines.add("   >> INTEL: ${app.whatsNew.take(50)}...")
+                         }
+                    }
+                    lines = resultLines
+                }
+                input = ""
+                return
+            }
+            cmd.lowercase().startsWith("scan") -> {
+                newLines.add("ERR: Specify scan target. Try 'scan --local'.")
             }
             else -> newLines.add("ERR: Command '$cmd' not recognized.")
         }

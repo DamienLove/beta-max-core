@@ -23,10 +23,18 @@
 - Kapt/Kotlin 2.0: Kapt falls back to 1.9 but works for Room.
 
 === 3. FEATURE MANIFEST (IMPLEMENTED) ===
+- [x] Portal: Firebase Auth (Email + Google) & Firestore integration.
+- [x] Portal: Role-based Onboarding (Tester/Scout vs Developer/Architect).
+- [x] Portal: Firebase Security Rules (Role-based access control).
+- [x] Portal: Cyberpunk/Retro-future responsive UI (React 19 + Tailwind 4).
 - [x] UI: Retro-future "Deck" aesthetics (CRT scanlines, Tailwind styles).
-- [x] Terminal Mode: Functional CLI with `scan`, `list`, `help`.
-- [x] Visual Mode: Dashboard with Stats and Mission Cards.
-- [x] Query Core: Mock AI translation of natural language to BMQL (SQL-like).
+- [x] Portal: Scout Qualification test engine.
+- [x] Portal: Architect's App (Mission) Registration flow.
+- [x] Portal: "External Betas" flow (Community-sourced missions).
+- [x] Portal: GitHub Issues export for Anomaly Logs.
+- [x] App: Firebase Integration (Firestore missions fetch).
+- [x] App: UI support for OFFICIAL vs COMMUNITY missions.
+- [x] Firestore: Tier-based security rules for missions.
 
 === 4. ACTIVE CONTEXT / LORE ===
 - The project evolved through several pivots (Vanguard, Apex, Vector) before settling on **Beta Max**.
@@ -38,7 +46,8 @@
   - Query Syntax -> "BMQL" (Beta Max Query Language)
 
 === 5. NEXT ACTIONS (ON RESUME) ===
-- Iterate on the "Query Core" to make it more interactive?
-- Set up the Capacitor Android bridge?
-- Refine the "Mission Briefing" UI?
-- Wait for Architect instructions.
+- Implement "Enrollment" logic in the portal and app (Scouts joining missions).
+- Build the "Anomaly Log" (Bug Report) submission flow in the app.
+- Create a "Leaderboard" or "Scout Hall of Fame" in the portal.
+- Integrate BMQL (Beta Max Query Language) parser for advanced mission filtering.
+

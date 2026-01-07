@@ -13,6 +13,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,23 +24,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.betamax.core.R
 import com.betamax.core.data.Mission
 import com.betamax.core.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VisualDashboard() {
-    val featuredMission = Mission("PRJ-01", "NEBULA_STREAM", "BETA_ACTIVE", 142, 500, "Next-gen audio streaming.", "nebula_issues")
-    val newMissions = listOf(
-        Mission("PRJ-02", "TITAN_OS", "ALPHA_UNSTABLE", 12, 1500, "Experimental Android launcher.", "titan_core"),
-        Mission("PRJ-03", "CYBER_DOCK", "GOLD_MASTER", 0, 100, "Legacy docking station software.", "cyber_dock"),
-        Mission("PRJ-04", "HYPER_LOOP", "BETA_CLOSED", 5, 2000, "Transport logistics network.", "hyper_loop")
-    )
-    val topPaying = listOf(
-        Mission("PRJ-05", "VOID_NET", "ALPHA_CRITICAL", 99, 5000, "Deep space comms.", "void_net"),
-        Mission("PRJ-02", "TITAN_OS", "ALPHA_UNSTABLE", 12, 1500, "Experimental Android launcher.", "titan_core")
-    )
+fun VisualDashboard(viewModel: DashboardViewModel = viewModel()) {
+    val missions by viewModel.missions.collectAsState()
+    val isLoading by viewModel.loading.collectAsState()
+
+    val featuredMission = missions.firstOrNull()
+    val newMissions = missions.take(5)
+    val topPaying = missions.sortedByDescending { it.rewardValue.toIntOrNull() ?: 0 }.take(5)
 
     Scaffold(
         topBar = {
@@ -101,7 +100,7 @@ fun VisualDashboard() {
                     color = Cyan500, 
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
                 )
-                HeroCard(featuredMission)
+                featuredMission?.let { HeroCard(it) } ?: Box(modifier = Modifier.fillMaxWidth().height(200.dp).padding(16.dp).background(Slate900, RoundedCornerShape(16.dp)))
             }
 
             item {
@@ -168,7 +167,12 @@ fun HeroCard(mission: Mission) {
                     .align(Alignment.BottomStart)
                     .padding(16.dp)
             ) {
-                Badge(mission.status)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Badge(mission.status)
+                    if (mission.type == "COMMUNITY") {
+                        Badge("COMMUNITY")
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(mission.name, style = MaterialTheme.typography.titleLarge, color = Color.White)
                 Text(mission.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
@@ -192,7 +196,7 @@ fun AppStoreCard(mission: Mission) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(if (mission.payout > 1000) Amber500 else Cyan500)
+                    .background(if ((mission.rewardValue.toIntOrNull() ?: 0) > 1000) Amber500 else Cyan500)
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(mission.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, color = Color.White)
@@ -202,7 +206,7 @@ fun AppStoreCard(mission: Mission) {
                 Icon(Icons.Default.Star, contentDescription = null, tint = Amber400, modifier = Modifier.size(12.dp))
                 Text(" 4.8", style = MaterialTheme.typography.labelSmall, color = Color.White)
                 Spacer(modifier = Modifier.weight(1f))
-                Text("${mission.payout} CR", style = MaterialTheme.typography.labelSmall, color = Amber400, fontWeight = FontWeight.Bold)
+                Text("${mission.rewardValue} CR", style = MaterialTheme.typography.labelSmall, color = Amber400, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -262,14 +266,20 @@ fun BetaMaxStatCard(
 
 @Composable
 fun Badge(text: String) {
+    val (bgColor, borderColor, textColor) = when {
+        text.contains("ALPHA") -> Triple(Color(0xFF3B0707), Color.Red, Color.Red)
+        text == "COMMUNITY" -> Triple(Color(0xFF0C2038), Color(0xFF22D3EE), Color(0xFF22D3EE))
+        else -> Triple(Color(0xFF022C22), Color.Green, Color.Green)
+    }
+
     Surface(
-        color = if (text.contains("ALPHA")) Color(0xFF3B0707) else Color(0xFF022C22),
-        border = BorderStroke(1.dp, if (text.contains("ALPHA")) Color.Red else Color.Green),
+        color = bgColor,
+        border = BorderStroke(1.dp, borderColor),
         shape = MaterialTheme.shapes.small
     ) {
         Text(
             text = text,
-            color = if (text.contains("ALPHA")) Color.Red else Color.Green,
+            color = textColor,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
