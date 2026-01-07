@@ -49,7 +49,7 @@ const TEST_MODULES = [
 
 export default function TestEngine({ onComplete }) {
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({});
+  const [, setUserAnswers] = useState({});
   const [sequenceBuffer, setSequenceBuffer] = useState([]);
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);

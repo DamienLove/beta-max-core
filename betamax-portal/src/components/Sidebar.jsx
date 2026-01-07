@@ -4,21 +4,16 @@ import {
   Shield, 
   Code, 
   LogOut, 
-  Database,
-  Globe
+  Globe,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
 
-export default function Sidebar({ view, setView }) {
-  const { profile } = useAuth();
-
-  const handleLogout = () => {
-    signOut(auth);
-  };
-
-  const NavItem = ({ id, label, icon: Icon }) => (
+const NavItem = ({ id, label, icon: Icon, view, setView }) => {
+  const IconComponent = Icon || Database;
+  return (
     <button 
       onClick={() => setView(id)}
       className={`w-full text-left px-4 py-3 rounded border transition-all flex items-center gap-3 mb-2
@@ -26,9 +21,17 @@ export default function Sidebar({ view, setView }) {
           ? 'bg-cyan-950/40 border-cyan-500 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.1)]' 
           : 'border-transparent text-cyan-700 hover:text-cyan-400 hover:bg-cyan-950/20'}`}
     >
-      <Icon size={18} /> {label}
+      <IconComponent size={18} /> {label}
     </button>
   );
+};
+
+export default function Sidebar({ view, setView }) {
+  const { profile } = useAuth();
+
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
   return (
     <div className="w-full md:w-64 border-r border-cyan-900/30 bg-black/60 flex flex-col backdrop-blur-md z-40 h-full">
@@ -44,19 +47,19 @@ export default function Sidebar({ view, setView }) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto">
-        <NavItem id="dashboard" label="DASHBOARD" icon={Monitor} />
+        <NavItem id="dashboard" label="DASHBOARD" icon={Monitor} view={view} setView={setView} />
         
         {profile?.role === 'developer' && (
           <>
-            <NavItem id="my-apps" label="MY_PROJECTS" icon={Code} />
-            <NavItem id="recruitment" label="RECRUITMENT" icon={Shield} />
+            <NavItem id="my-apps" label="MY_PROJECTS" icon={Code} view={view} setView={setView} />
+            <NavItem id="recruitment" label="RECRUITMENT" icon={Shield} view={view} setView={setView} />
           </>
         )}
 
         {profile?.role === 'tester' && (
           <>
-            <NavItem id="missions" label="ACTIVE_OPS" icon={Shield} />
-            <NavItem id="external" label="EXT_PROTOCOLS" icon={Globe} />
+            <NavItem id="missions" label="ACTIVE_OPS" icon={Shield} view={view} setView={setView} />
+            <NavItem id="external" label="EXT_PROTOCOLS" icon={Globe} view={view} setView={setView} />
           </>
         )}
       </nav>

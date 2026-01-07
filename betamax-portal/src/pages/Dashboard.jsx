@@ -14,7 +14,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [view, setView] = useState('dashboard'); // dashboard, my-apps, missions, external, recruitment
   const [missions, setMissions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // Stats Logic (Simplified)
   const [stats, setStats] = useState({
