@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AuthPage from './pages/AuthPage';
-import OnboardingPage from './pages/OnboardingPage';
-import Dashboard from './pages/Dashboard';
-import AppRegistrationPage from './pages/AppRegistrationPage';
-import MissionDetailsPage from './pages/MissionDetailsPage';
 import './App.css';
+
+// Optimization: Route-based code splitting to reduce initial bundle size
+const AuthPage = lazy(() => import('./pages/AuthPage'));
+const OnboardingPage = lazy(() => import('./pages/OnboardingPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const AppRegistrationPage = lazy(() => import('./pages/AppRegistrationPage'));
+const MissionDetailsPage = lazy(() => import('./pages/MissionDetailsPage'));
 
 const ProtectedRoute = ({ children, requireRole }) => {
   const { user, profile, loading } = useAuth();
@@ -26,26 +28,32 @@ function AppRoutes() {
   const { user, profile } = useAuth();
 
   return (
-    <Routes>
-      <Route path="/auth" element={user && profile ? <Navigate to="/dashboard" /> : <AuthPage />} />
-      <Route path="/onboarding" element={user ? (profile ? <Navigate to="/dashboard" /> : <OnboardingPage />) : <Navigate to="/auth" />} />
-      <Route path="/dashboard/*" element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/mission/:id" element={
-        <ProtectedRoute>
-          <MissionDetailsPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/register-app" element={
-        <ProtectedRoute requireRole="developer">
-          <AppRegistrationPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/" element={<Navigate to="/dashboard" />} />
-    </Routes>
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center text-cyan-500 font-mono">
+        <div className="animate-pulse">LOADING_MODULE...</div>
+      </div>
+    }>
+      <Routes>
+        <Route path="/auth" element={user && profile ? <Navigate to="/dashboard" /> : <AuthPage />} />
+        <Route path="/onboarding" element={user ? (profile ? <Navigate to="/dashboard" /> : <OnboardingPage />) : <Navigate to="/auth" />} />
+        <Route path="/dashboard/*" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/mission/:id" element={
+          <ProtectedRoute>
+            <MissionDetailsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/register-app" element={
+          <ProtectedRoute requireRole="developer">
+            <AppRegistrationPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+      </Routes>
+    </Suspense>
   );
 }
 

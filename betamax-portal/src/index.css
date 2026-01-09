@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -12,8 +13,6 @@
   --animate-blink: blink 1s step-end infinite;
   --animate-glitch: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
 
 :root {
   font-family: 'JetBrains Mono', monospace;
