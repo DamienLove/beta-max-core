@@ -1,7 +1,23 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --font-retro: "JetBrains Mono", monospace;
+
+  --color-background: #09090b;
+  --color-surface: #18181b;
+  --color-surfaceHighlight: #27272a;
+  --color-primary: #3b82f6;
+  --color-primaryDark: #1d4ed8;
+  --color-accent: #06b6d4;
+  --color-danger: #ef4444;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-subtle: #71717a;
+
   --color-neon-cyan: #22d3ee;
   --color-neon-fuchsia: #e879f9;
   --color-neon-amber: #fbbf24;
@@ -11,15 +27,29 @@
   --animate-scanline: scanline 8s linear infinite;
   --animate-blink: blink 1s step-end infinite;
   --animate-glitch: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+  --animate-fade-in: fadeIn 0.3s ease-out both;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
 
 :root {
-  font-family: 'JetBrains Mono', monospace;
-  background-color: var(--color-dark-bg);
-  color: var(--color-neon-cyan);
+  font-family: 'Inter', 'JetBrains Mono', system-ui, sans-serif;
+  background-color: var(--color-background);
+  color: #e4e4e7;
+  -webkit-font-smoothing: antialiased;
 }
+
+body {
+  margin: 0;
+  background-color: var(--color-background);
+  color: #e4e4e7;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Custom Scrollbar for specific areas */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #18181b; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
 
 /* --- Retro CRT Effects --- */
 .crt-overlay {
@@ -61,6 +91,16 @@
 }
 
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes fadeIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fadeIn 0.3s ease-out both; }
+
+input, select, textarea {
+  outline: none;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
 
 /* --- Text Effects --- */
 .text-glow-cyan { text-shadow: 0 0 10px rgba(34, 211, 238, 0.7); }

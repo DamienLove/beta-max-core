@@ -26,26 +26,32 @@ export default function MissionDetailsPage() {
 
   useEffect(() => {
     const fetchMission = async () => {
-      const docRef = doc(db, "missions", id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setMission({ id: docSnap.id, ...docSnap.data() });
-        
-        // Check enrollment if tester
-        if (profile.role === 'tester') {
-            // Check if user is already enrolled
-             const q = query(
-                collection(db, "enrollments"), 
-                where("missionId", "==", id),
-                where("userId", "==", user.uid)
-             );
-             const enrollmentSnap = await getDocs(q);
-             setEnrolled(!enrollmentSnap.empty);
+      try {
+        const docRef = doc(db, "missions", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setMission({ id: docSnap.id, ...docSnap.data() });
+
+          // Check enrollment if tester
+          if (profile.role === 'tester') {
+              // Check if user is already enrolled
+               const q = query(
+                  collection(db, "enrollments"),
+                  where("missionId", "==", id),
+                  where("userId", "==", user.uid)
+               );
+               const enrollmentSnap = await getDocs(q);
+               setEnrolled(!enrollmentSnap.empty);
+          }
+        } else {
+          navigate('/dashboard');
         }
-      } else {
-        navigate('/dashboard');
+      } catch (err) {
+        console.error('mission fetch error', err);
+        navigate('/dashboard', { replace: true, state: { error: err.message } });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchMission();
   }, [id, navigate, profile, user]);

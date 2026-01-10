@@ -25,13 +25,20 @@ export default function ExternalBetasPage() {
   useEffect(() => {
     // Fetch COMMUNITY missions
     const q = query(
-      collection(db, "missions"), 
+      collection(db, "missions"),
       where("type", "==", "COMMUNITY"),
       orderBy("createdAt", "desc")
     );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setBetas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setBetas(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      },
+      (err) => {
+        console.error('external missions listener error', err);
+        setBetas([]);
+      }
+    );
     return unsubscribe;
   }, []);
 

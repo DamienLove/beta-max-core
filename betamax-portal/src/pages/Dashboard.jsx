@@ -15,6 +15,7 @@ export default function Dashboard() {
   const [view, setView] = useState('dashboard'); // dashboard, my-apps, missions, external, recruitment
   const [missions, setMissions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Stats Logic (Simplified)
   const [stats, setStats] = useState({
@@ -35,12 +36,22 @@ export default function Dashboard() {
       q = query(missionsRef, where("status", "==", "ACTIVE"));
     }
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setMissions(data);
-      setStats(prev => ({ ...prev, activeMissions: data.length }));
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setMissions(data);
+        setStats(prev => ({ ...prev, activeMissions: data.length }));
+        setError(null);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('missions listener error', err);
+        setError(err.message || 'Unable to load missions.');
+        setMissions([]);
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, [profile]);
@@ -55,12 +66,18 @@ export default function Dashboard() {
     <div className="flex h-screen bg-slate-950 overflow-hidden font-retro relative">
        <div className="fixed inset-0 crt-overlay z-50"></div>
        <div className="fixed inset-0 crt-flicker z-40"></div>
-       
+
        <Sidebar view={view} setView={setView} />
-       
+
        <main className="flex-1 overflow-auto p-8 relative z-10">
           <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             
+            {error && (
+              <div className="p-4 border border-red-500/40 bg-red-500/10 text-red-200 rounded">
+                <p className="text-sm font-mono">Permissions error: {error}</p>
+                <p className="text-xs text-red-300 mt-1">Check Firestore rules or your account role/tier.</p>
+              </div>
+            )}
+
              {/* Header */}
              <div className="flex justify-between items-end border-b border-cyan-900/30 pb-4">
                 <div>

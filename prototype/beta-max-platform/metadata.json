@@ -1,0 +1,7 @@
+{
+  "name": "Beta Max Platform",
+  "description": "A professional-grade, gamified beta testing and bug reporting platform for developers.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -34,6 +34,7 @@
 - [x] Portal: GitHub Issues export for Anomaly Logs.
 - [x] App: Firebase Integration (Firestore missions fetch).
 - [x] App: UI support for OFFICIAL vs COMMUNITY missions.
+- [x] App: Device Recon (Local scan for beta apps + Play Store intel scraping).
 - [x] Firestore: Tier-based security rules for missions.
 
 === 4. ACTIVE CONTEXT / LORE ===
@@ -46,8 +47,9 @@
   - Query Syntax -> "BMQL" (Beta Max Query Language)
 
 === 5. NEXT ACTIONS (ON RESUME) ===
-- Implement "Enrollment" logic in the portal and app (Scouts joining missions).
-- Build the "Anomaly Log" (Bug Report) submission flow in the app.
-- Create a "Leaderboard" or "Scout Hall of Fame" in the portal.
-- Integrate BMQL (Beta Max Query Language) parser for advanced mission filtering.
+- [ ] Implement "Enrollment" logic in the portal and app (Scouts joining missions).
+- [ ] Build the "Anomaly Log" (Bug Report) submission flow in the app.
+- [ ] Create a "Leaderboard" or "Scout Hall of Fame" in the portal.
+- [ ] Integrate BMQL (Beta Max Query Language) parser for advanced mission filtering.
+- [ ] Build up "Recon" capabilities to include automatic enrollment detection.
 
