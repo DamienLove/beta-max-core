@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { Project, FeedbackItem, User, ProjectVersion } from './types';
 
@@ -261,7 +261,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const { user, projects, feedback } = useApp();
 
-    const myFeedback = feedback.filter(f => f.reporterId === user?.id);
+    const myFeedback = useMemo(() => feedback.filter(f => f.reporterId === user?.id), [feedback, user?.id]);
 
     return (
         <div className="flex flex-col min-h-screen pb-24 font-sans bg-background">
@@ -305,7 +305,12 @@ const Dashboard = () => {
                             return (
                                 <div key={p.id} onClick={() => navigate(`/project/${p.id}`)} className="group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer">
                                     <div className="flex items-center gap-4 p-3">
-                                        <img src={p.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={p.name} />
+                                        <img
+                                            src={p.imageUrl.replace('w=800', 'w=200')}
+                                            className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
+                                            alt={p.name}
+                                            loading="lazy"
+                                        />
                                         <div className="flex-1">
                                             <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{p.name}</h3>
                                             <div className="flex items-center gap-2 mt-1">
@@ -359,9 +364,9 @@ const ProjectDetail = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'changelog' | 'feedback'>('overview');
     
     // Find project based on ID from URL or mock
-    const project = projects.find(p => p.id === (id || 'p1')) || projects[0];
-    const projectFeedback = feedback.filter(f => f.projectId === project.id);
-    const currentVersion = project.versions.find(v => v.isCurrent);
+    const project = useMemo(() => projects.find(p => p.id === (id || 'p1')) || projects[0], [projects, id]);
+    const projectFeedback = useMemo(() => feedback.filter(f => f.projectId === project.id), [feedback, project.id]);
+    const currentVersion = useMemo(() => project.versions.find(v => v.isCurrent), [project]);
 
     return (
         <div className="flex flex-col min-h-screen bg-background pb-24">
