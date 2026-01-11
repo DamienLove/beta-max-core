@@ -692,26 +692,30 @@ const Profile = () => {
     );
 };
 
+const NavItem = ({ path, icon, label }: { path: string; icon: string; label: string }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const isActive = location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+
+    return (
+        <button 
+            onClick={() => navigate(path)} 
+            className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 ${isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+        >
+            <Icon name={icon} className={`text-2xl ${isActive ? 'font-bold' : ''}`} />
+            <span className="text-[10px] font-medium tracking-wide">{label}</span>
+        </button>
+    );
+};
+
 const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    
+
     // Hide bottom nav on specific pages
     if (['/feedback/new'].includes(location.pathname)) {
         return <>{children}</>;
     }
-
-    const isActive = (path: string) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
-
-    const NavItem = ({ path, icon, label }: { path: string; icon: string; label: string }) => (
-        <button 
-            onClick={() => navigate(path)} 
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 ${isActive(path) ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
-        >
-            <Icon name={icon} className={`text-2xl ${isActive(path) ? 'font-bold' : ''}`} />
-            <span className="text-[10px] font-medium tracking-wide">{label}</span>
-        </button>
-    );
 
     return (
         <>
