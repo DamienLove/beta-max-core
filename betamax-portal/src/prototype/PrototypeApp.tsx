@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate, useParams, Link } from 'react-router-dom';
 import { Project, FeedbackItem, User, ProjectVersion } from './types';
 
 // --- MOCK DATA GENERATORS ---
@@ -210,13 +210,14 @@ const AuthScreen = () => {
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     {!isLogin && (
                         <div>
-                            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Full Name</label>
-                            <input type="text" className="w-full bg-surfaceHighlight border border-white/10 rounded-lg p-3 text-white text-sm focus:border-primary transition-colors" placeholder="John Doe" />
+                            <label htmlFor="fullName" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Full Name</label>
+                            <input id="fullName" type="text" className="w-full bg-surfaceHighlight border border-white/10 rounded-lg p-3 text-white text-sm focus:border-primary transition-colors" placeholder="John Doe" />
                         </div>
                     )}
                     <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Email Address</label>
+                        <label htmlFor="email" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Email Address</label>
                         <input 
+                            id="email"
                             type="email" 
                             required 
                             value={email}
@@ -226,8 +227,9 @@ const AuthScreen = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-zinc-400 uppercase mb-1">Password</label>
+                        <label htmlFor="password" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Password</label>
                         <input 
+                            id="password"
                             type="password" 
                             required
                             value={password}
@@ -270,9 +272,9 @@ const Dashboard = () => {
                     <h1 className="text-lg font-bold text-white tracking-tight">Dashboard</h1>
                     <p className="text-zinc-500 text-xs">Welcome back, {user?.name.split(' ')[0]}</p>
                 </div>
-                <div onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full border border-white/10 overflow-hidden cursor-pointer bg-surfaceHighlight hover:border-primary/50 transition-colors">
+                <Link to="/profile" className="w-10 h-10 rounded-full border border-white/10 overflow-hidden cursor-pointer bg-surfaceHighlight hover:border-primary/50 transition-colors block">
                     <img src={user?.avatar} alt="Profile" className="w-full h-full object-cover" />
-                </div>
+                </Link>
             </header>
 
             <main className="px-6 py-6 flex flex-col gap-8">
@@ -303,7 +305,7 @@ const Dashboard = () => {
                         {projects.map(p => {
                             const currentVer = p.versions.find(v => v.isCurrent);
                             return (
-                                <div key={p.id} onClick={() => navigate(`/project/${p.id}`)} className="group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer">
+                                <Link key={p.id} to={`/project/${p.id}`} className="group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer block">
                                     <div className="flex items-center gap-4 p-3">
                                         <img src={p.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={p.name} />
                                         <div className="flex-1">
@@ -315,7 +317,7 @@ const Dashboard = () => {
                                         </div>
                                         <Icon name="chevron_right" className="text-zinc-600" />
                                     </div>
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>
@@ -370,7 +372,7 @@ const ProjectDetail = () => {
                 <img src={project.imageUrl} className="w-full h-full object-cover opacity-40" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent"></div>
                 <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
-                    <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-black/40 backdrop-blur text-white flex items-center justify-center hover:bg-black/60 transition-colors">
+                    <button onClick={() => navigate(-1)} aria-label="Go back" className="w-10 h-10 rounded-full bg-black/40 backdrop-blur text-white flex items-center justify-center hover:bg-black/60 transition-colors">
                         <Icon name="arrow_back" />
                     </button>
                     {user?.role === 'admin' && <button className="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-bold border border-primary/30">Admin Mode</button>}
@@ -481,7 +483,7 @@ const ProjectDetail = () => {
                             </div>
                         ))}
                         
-                        <button onClick={() => navigate('/feedback/new', { state: { projectId: project.id } })} className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-[0_4px_20px_rgba(59,130,246,0.5)] flex items-center justify-center hover:scale-105 transition-transform z-30">
+                        <button onClick={() => navigate('/feedback/new', { state: { projectId: project.id } })} aria-label="Submit new feedback" className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-[0_4px_20px_rgba(59,130,246,0.5)] flex items-center justify-center hover:scale-105 transition-transform z-30">
                             <Icon name="add" className="text-2xl" />
                         </button>
                     </div>
@@ -560,8 +562,9 @@ const FeedbackForm = () => {
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+                            <label htmlFor="project" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
                             <select 
+                                id="project"
                                 value={projectId}
                                 onChange={(e) => setProjectId(e.target.value)}
                                 className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
@@ -570,8 +573,9 @@ const FeedbackForm = () => {
                             </select>
                         </div>
                         <div>
-                            <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+                            <label htmlFor="version" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
                             <select 
+                                id="version"
                                 value={version}
                                 onChange={(e) => setVersion(e.target.value)}
                                 className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
@@ -585,8 +589,9 @@ const FeedbackForm = () => {
 
                     {/* Title */}
                     <div>
-                        <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Title</label>
+                        <label htmlFor="title" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Title</label>
                         <input 
+                            id="title"
                             type="text" 
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
@@ -615,8 +620,9 @@ const FeedbackForm = () => {
 
                     {/* Description */}
                     <div>
-                        <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Description / Steps</label>
+                        <label htmlFor="description" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Description / Steps</label>
                         <textarea 
+                            id="description"
                             rows={6}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
@@ -722,6 +728,7 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
                     
                     <button 
                         onClick={() => navigate('/feedback/new')} 
+                        aria-label="Submit new feedback"
                         className="relative -top-8 bg-primary hover:bg-primaryDark text-white w-14 h-14 rounded-full shadow-[0_8px_25px_rgba(59,130,246,0.4)] border-4 border-background flex items-center justify-center transition-transform active:scale-95"
                     >
                         <Icon name="add" className="text-3xl" />
