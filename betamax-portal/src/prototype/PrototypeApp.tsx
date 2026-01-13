@@ -692,6 +692,16 @@ const Profile = () => {
     );
 };
 
+const NavItem = ({ path, icon, label, isActive, onClick }: { path: string; icon: string; label: string; isActive: boolean; onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 ${isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+    >
+        <Icon name={icon} className={`text-2xl ${isActive ? 'font-bold' : ''}`} />
+        <span className="text-[10px] font-medium tracking-wide">{label}</span>
+    </button>
+);
+
 const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -703,22 +713,18 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
 
     const isActive = (path: string) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
 
-    const NavItem = ({ path, icon, label }: { path: string; icon: string; label: string }) => (
-        <button 
-            onClick={() => navigate(path)} 
-            className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 ${isActive(path) ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
-        >
-            <Icon name={icon} className={`text-2xl ${isActive(path) ? 'font-bold' : ''}`} />
-            <span className="text-[10px] font-medium tracking-wide">{label}</span>
-        </button>
-    );
-
     return (
         <>
             {children}
             <div className="fixed bottom-0 left-0 right-0 z-40 px-6 pb-6 pt-4 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
                 <nav className="pointer-events-auto bg-[#18181b]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex justify-between items-center px-6 py-3 max-w-md mx-auto">
-                    <NavItem path="/" icon="dashboard" label="Home" />
+                    <NavItem
+                        path="/"
+                        icon="dashboard"
+                        label="Home"
+                        isActive={isActive('/')}
+                        onClick={() => navigate('/')}
+                    />
                     
                     <button 
                         onClick={() => navigate('/feedback/new')} 
@@ -727,7 +733,13 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
                         <Icon name="add" className="text-3xl" />
                     </button>
 
-                    <NavItem path="/profile" icon="person" label="Profile" />
+                    <NavItem
+                        path="/profile"
+                        icon="person"
+                        label="Profile"
+                        isActive={isActive('/profile')}
+                        onClick={() => navigate('/profile')}
+                    />
                 </nav>
             </div>
         </>
