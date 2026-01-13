@@ -2,13 +2,14 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// See .env.example for setup instructions
 const firebaseConfig = {
-  projectId: "beta-max-core-portal-2026",
-  appId: "1:400828648544:web:0e7017d7ec2d0243308705",
-  storageBucket: "beta-max-core-portal-2026.firebasestorage.app",
-  apiKey: "AIzaSyBPJzqQDqrbzWGVPSsmnwHs3aI0rbyJ7xU",
-  authDomain: "beta-max-core-portal-2026.firebaseapp.com",
-  messagingSenderId: "400828648544",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
 };
 
 const app = initializeApp(firebaseConfig);
