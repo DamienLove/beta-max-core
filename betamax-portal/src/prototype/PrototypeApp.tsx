@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { Project, FeedbackItem, User, ProjectVersion } from './types';
 
@@ -366,9 +366,10 @@ const ProjectDetail = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'changelog' | 'feedback'>('overview');
     
     // Find project based on ID from URL or mock
-    const project = projects.find(p => p.id === (id || 'p1')) || projects[0];
-    const projectFeedback = feedback.filter(f => f.projectId === project.id);
-    const currentVersion = project.versions.find(v => v.isCurrent);
+    // Optimization: Memoize derived project data to prevent recalculation on tab switches
+    const project = useMemo(() => projects.find(p => p.id === (id || 'p1')) || projects[0], [projects, id]);
+    const projectFeedback = useMemo(() => feedback.filter(f => f.projectId === project.id), [feedback, project.id]);
+    const currentVersion = useMemo(() => project.versions.find(v => v.isCurrent), [project]);
 
     return (
         <div className="flex flex-col min-h-screen bg-background pb-24">
