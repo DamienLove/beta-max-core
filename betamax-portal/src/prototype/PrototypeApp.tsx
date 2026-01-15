@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useContext, useMemo } from 'react';
+import React, { useState, useEffect, createContext, useContext, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, useParams } from 'react-router-dom';
 import { Project, FeedbackItem, User, ProjectVersion } from './types';
 
@@ -90,14 +90,14 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
     const [feedback, setFeedback] = useState<FeedbackItem[]>(INITIAL_FEEDBACK);
 
-    const login = (email: string) => {
+    const login = useCallback((email: string) => {
         const found = MOCK_USERS.find(u => u.email === email) || MOCK_USERS[0]; // Default to Alex if not found for demo
         setUser(found);
-    };
+    }, []);
 
-    const logout = () => setUser(null);
+    const logout = useCallback(() => setUser(null), []);
 
-    const addFeedback = (item: Omit<FeedbackItem, 'id' | 'timestamp' | 'reporterId' | 'reporterName' | 'status'>) => {
+    const addFeedback = useCallback((item: Omit<FeedbackItem, 'id' | 'timestamp' | 'reporterId' | 'reporterName' | 'status'>) => {
         if (!user) return;
         const newItem: FeedbackItem = {
             ...item,
@@ -108,9 +108,9 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
             status: 'Open'
         };
         setFeedback(prev => [newItem, ...prev]);
-    };
+    }, [user]);
 
-    const addVersion = (projectId: string, versionStr: string, changelogStr: string) => {
+    const addVersion = useCallback((projectId: string, versionStr: string, changelogStr: string) => {
         setProjects(prev => prev.map(p => {
             if (p.id !== projectId) return p;
             
@@ -129,10 +129,15 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
                 versions: [newVersion, ...oldVersions]
             };
         }));
-    };
+    }, []);
+
+    // Optimized: Memoize context value to prevent unnecessary re-renders in consumers
+    const value = useMemo(() => ({
+        user, login, logout, projects, feedback, addFeedback, addVersion
+    }), [user, login, logout, projects, feedback, addFeedback, addVersion]);
 
     return (
-        <AppContext.Provider value={{ user, login, logout, projects, feedback, addFeedback, addVersion }}>
+        <AppContext.Provider value={value}>
             {children}
         </AppContext.Provider>
     );
