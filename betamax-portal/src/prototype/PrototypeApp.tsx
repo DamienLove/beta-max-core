@@ -145,40 +145,43 @@ const useApp = () => {
 };
 
 // --- ICONS ---
-const Icon = ({ name, className = "" }: { name: string; className?: string }) => (
+// Optimized: Memoized to prevent re-renders in lists
+const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
     <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
-);
+));
 
 // --- SHARED COMPONENTS ---
 
-const StatusBadge = ({ status, type = 'status' }: { status: string, type?: 'status' | 'severity' }) => {
-    const styles: Record<string, string> = {
-        // Status
-        Alpha: "bg-red-500/10 text-red-500 border-red-500/20",
-        Beta: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-        RC: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-        Live: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-        // Feedback Status
-        Open: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-        "In Review": "bg-purple-500/10 text-purple-500 border-purple-500/20",
-        Resolved: "bg-gray-500/10 text-gray-400 border-gray-500/20",
-        Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
-        // Severity
-        Critical: "bg-red-500 text-white border-red-600",
-        High: "bg-orange-500 text-white border-orange-600",
-        Medium: "bg-yellow-500 text-black border-yellow-600",
-        Low: "bg-blue-500 text-white border-blue-600",
-    };
-    
+// Optimized: Static styles moved outside component to prevent recreation
+const STATUS_STYLES: Record<string, string> = {
+    // Status
+    Alpha: "bg-red-500/10 text-red-500 border-red-500/20",
+    Beta: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    RC: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    Live: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    // Feedback Status
+    Open: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    "In Review": "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    Resolved: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+    Rejected: "bg-red-500/10 text-red-500 border-red-500/20",
+    // Severity
+    Critical: "bg-red-500 text-white border-red-600",
+    High: "bg-orange-500 text-white border-orange-600",
+    Medium: "bg-yellow-500 text-black border-yellow-600",
+    Low: "bg-blue-500 text-white border-blue-600",
+};
+
+// Optimized: Memoized to prevent re-renders in project/feedback lists
+const StatusBadge = React.memo(({ status, type = 'status' }: { status: string, type?: 'status' | 'severity' }) => {
     // Fallback style
     const defaultStyle = "bg-gray-800 text-gray-400 border-gray-700";
 
     return (
-        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${styles[status] || defaultStyle}`}>
+        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border ${STATUS_STYLES[status] || defaultStyle}`}>
             {status}
         </span>
     );
-};
+});
 
 // --- AUTH SCREENS ---
 
