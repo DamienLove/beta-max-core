@@ -280,9 +280,13 @@ const Dashboard = () => {
                     <h1 className="text-lg font-bold text-white tracking-tight">Dashboard</h1>
                     <p className="text-zinc-500 text-xs">Welcome back, {user?.name.split(' ')[0]}</p>
                 </div>
-                <div onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full border border-white/10 overflow-hidden cursor-pointer bg-surfaceHighlight hover:border-primary/50 transition-colors">
+                <button
+                    onClick={() => navigate('/profile')}
+                    className="w-10 h-10 rounded-full border border-white/10 overflow-hidden cursor-pointer bg-surfaceHighlight hover:border-primary/50 transition-colors"
+                    aria-label="Go to profile"
+                >
                     <img src={user?.avatar} alt="Profile" className="w-full h-full object-cover" />
-                </div>
+                </button>
             </header>
 
             <main className="px-6 py-6 flex flex-col gap-8">
@@ -313,7 +317,11 @@ const Dashboard = () => {
                         {projects.map(p => {
                             const currentVer = p.versions.find(v => v.isCurrent);
                             return (
-                                <div key={p.id} onClick={() => navigate(`/project/${p.id}`)} className="group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer">
+                                <button
+                                    key={p.id}
+                                    onClick={() => navigate(`/project/${p.id}`)}
+                                    className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
+                                >
                                     <div className="flex items-center gap-4 p-3">
                                         <img src={p.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={p.name} />
                                         <div className="flex-1">
@@ -325,7 +333,7 @@ const Dashboard = () => {
                                         </div>
                                         <Icon name="chevron_right" className="text-zinc-600" />
                                     </div>
-                                </div>
+                                </button>
                             );
                         })}
                     </div>
