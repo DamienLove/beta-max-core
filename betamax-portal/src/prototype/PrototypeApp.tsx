@@ -272,11 +272,56 @@ const AuthScreen = () => {
 
 // --- APP SCREENS ---
 
+// Optimized: Extract and memoize list item to prevent re-renders when other items change
+const ProjectCard = React.memo(({ project, onClick }: { project: Project; onClick: (id: string) => void }) => {
+    const currentVer = project.versions.find(v => v.isCurrent);
+    return (
+        <button
+            onClick={() => onClick(project.id)}
+            className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
+        >
+            <div className="flex items-center gap-4 p-3">
+                <img src={project.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={project.name} />
+                <div className="flex-1">
+                    <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{project.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                        <StatusBadge status={project.status} />
+                        <span className="text-[10px] text-zinc-500 font-mono bg-white/5 px-1.5 py-0.5 rounded">v{currentVer?.version}</span>
+                    </div>
+                </div>
+                <Icon name="chevron_right" className="text-zinc-600" />
+            </div>
+        </button>
+    );
+});
+
+// Optimized: Extract and memoize feedback item
+const DashboardFeedbackCard = React.memo(({ item }: { item: FeedbackItem }) => (
+    <div className="bg-surface border border-white/5 rounded-xl p-4 flex flex-col gap-2">
+        <div className="flex justify-between items-start">
+            <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${item.type === 'Bug' ? 'bg-danger' : 'bg-accent'}`}></span>
+                <span className="text-xs font-bold text-zinc-400 uppercase">{item.type}</span>
+            </div>
+            <StatusBadge status={item.status} />
+        </div>
+        <h4 className="text-sm font-medium text-white">{item.title}</h4>
+        <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-1">
+            <span>{item.projectName} • v{item.version}</span>
+            <span>{new Date(item.timestamp).toLocaleDateString()}</span>
+        </div>
+    </div>
+));
+
 const Dashboard = () => {
     const navigate = useNavigate();
     const { user, projects, feedback } = useApp();
 
-    const myFeedback = feedback.filter(f => f.reporterId === user?.id);
+    // Optimized: Memoize derived data to prevent recalculation on every render
+    const myFeedback = useMemo(() => feedback.filter(f => f.reporterId === user?.id), [feedback, user?.id]);
+
+    // Optimized: Stable callback for list items
+    const handleProjectClick = useCallback((id: string) => navigate(`/project/${id}`), [navigate]);
 
     return (
         <div className="flex flex-col min-h-screen pb-24 font-sans bg-background">
@@ -319,28 +364,9 @@ const Dashboard = () => {
                         <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Assigned Projects</h2>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {projects.map(p => {
-                            const currentVer = p.versions.find(v => v.isCurrent);
-                            return (
-                                <button
-                                    key={p.id}
-                                    onClick={() => navigate(`/project/${p.id}`)}
-                                    className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-4 p-3">
-                                        <img src={p.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={p.name} />
-                                        <div className="flex-1">
-                                            <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{p.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <StatusBadge status={p.status} />
-                                                <span className="text-[10px] text-zinc-500 font-mono bg-white/5 px-1.5 py-0.5 rounded">v{currentVer?.version}</span>
-                                            </div>
-                                        </div>
-                                        <Icon name="chevron_right" className="text-zinc-600" />
-                                    </div>
-                                </button>
-                            );
-                        })}
+                        {projects.map(p => (
+                            <ProjectCard key={p.id} project={p} onClick={handleProjectClick} />
+                        ))}
                     </div>
                 </section>
 
@@ -353,20 +379,7 @@ const Dashboard = () => {
                                 No feedback submitted yet.
                             </div>
                         ) : myFeedback.slice(0, 5).map(item => (
-                            <div key={item.id} className="bg-surface border border-white/5 rounded-xl p-4 flex flex-col gap-2">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full ${item.type === 'Bug' ? 'bg-danger' : 'bg-accent'}`}></span>
-                                        <span className="text-xs font-bold text-zinc-400 uppercase">{item.type}</span>
-                                    </div>
-                                    <StatusBadge status={item.status} />
-                                </div>
-                                <h4 className="text-sm font-medium text-white">{item.title}</h4>
-                                <div className="flex justify-between items-center text-[10px] text-zinc-500 mt-1">
-                                    <span>{item.projectName} • v{item.version}</span>
-                                    <span>{new Date(item.timestamp).toLocaleDateString()}</span>
-                                </div>
-                            </div>
+                            <DashboardFeedbackCard key={item.id} item={item} />
                         ))}
                     </div>
                 </section>
