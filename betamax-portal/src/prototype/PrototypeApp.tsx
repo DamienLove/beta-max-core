@@ -272,11 +272,40 @@ const AuthScreen = () => {
 
 // --- APP SCREENS ---
 
+// Optimized: Memoized project card to prevent re-renders when other dashboard data updates
+const ProjectListCard = React.memo(({ project, onNavigate }: { project: Project; onNavigate: (id: string) => void }) => {
+    const currentVer = project.versions.find(v => v.isCurrent);
+    return (
+        <button
+            onClick={() => onNavigate(project.id)}
+            className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
+        >
+            <div className="flex items-center gap-4 p-3">
+                <img src={project.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={project.name} loading="lazy" />
+                <div className="flex-1">
+                    <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{project.name}</h3>
+                    <div className="flex items-center gap-2 mt-1">
+                        <StatusBadge status={project.status} />
+                        <span className="text-[10px] text-zinc-500 font-mono bg-white/5 px-1.5 py-0.5 rounded">v{currentVer?.version}</span>
+                    </div>
+                </div>
+                <Icon name="chevron_right" className="text-zinc-600" />
+            </div>
+        </button>
+    );
+});
+
 const Dashboard = () => {
     const navigate = useNavigate();
     const { user, projects, feedback } = useApp();
 
-    const myFeedback = feedback.filter(f => f.reporterId === user?.id);
+    // Optimized: Memoize derived data to prevent O(N) filter on every render
+    const myFeedback = useMemo(() => feedback.filter(f => f.reporterId === user?.id), [feedback, user?.id]);
+
+    // Optimized: Stable handler for project navigation
+    const handleProjectClick = useCallback((id: string) => {
+        navigate(`/project/${id}`);
+    }, [navigate]);
 
     return (
         <div className="flex flex-col min-h-screen pb-24 font-sans bg-background">
@@ -319,28 +348,13 @@ const Dashboard = () => {
                         <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-wider">Assigned Projects</h2>
                     </div>
                     <div className="flex flex-col gap-4">
-                        {projects.map(p => {
-                            const currentVer = p.versions.find(v => v.isCurrent);
-                            return (
-                                <button
-                                    key={p.id}
-                                    onClick={() => navigate(`/project/${p.id}`)}
-                                    className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
-                                >
-                                    <div className="flex items-center gap-4 p-3">
-                                        <img src={p.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={p.name} />
-                                        <div className="flex-1">
-                                            <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{p.name}</h3>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <StatusBadge status={p.status} />
-                                                <span className="text-[10px] text-zinc-500 font-mono bg-white/5 px-1.5 py-0.5 rounded">v{currentVer?.version}</span>
-                                            </div>
-                                        </div>
-                                        <Icon name="chevron_right" className="text-zinc-600" />
-                                    </div>
-                                </button>
-                            );
-                        })}
+                        {projects.map(p => (
+                            <ProjectListCard
+                                key={p.id}
+                                project={p}
+                                onNavigate={handleProjectClick}
+                            />
+                        ))}
                     </div>
                 </section>
 
