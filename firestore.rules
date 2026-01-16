@@ -24,9 +24,8 @@ service cloud.firestore {
       allow create: if isSignedIn() && getUserData().role == 'developer';
       allow update, delete: if isSignedIn() && resource.data.architectId == request.auth.uid;
 
-      // TEMP relaxed read for local dev to avoid permission crashes.
-      // TODO: tighten back to role/tier checks before release.
-      allow read, list: if isSignedIn();
+      // FIXED: Tightened back to role/tier checks.
+      allow read, list: if isSignedIn() && (resource.data.architectId == request.auth.uid || getUserData().role == 'developer');
     }
 
     // Enrollments
