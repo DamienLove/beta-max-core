@@ -487,10 +487,16 @@ const ProjectDetail = () => {
                     <div className="space-y-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-xs font-bold text-zinc-500 uppercase">Community Reports</h3>
-                            <span className="text-xs text-zinc-600">{projectFeedback.length} items</span>
+                            <span className="text-xs text-zinc-600">{projectFeedback.length} item{projectFeedback.length !== 1 ? 's' : ''}</span>
                         </div>
-                        {projectFeedback.map(item => (
-                            <div key={item.id} className="bg-surface border border-white/5 rounded-xl p-4 hover:border-white/20 transition-all cursor-pointer">
+                        {projectFeedback.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-zinc-500 border border-dashed border-white/5 rounded-xl bg-surface/30">
+                                <Icon name="inbox" className="text-4xl mb-2 opacity-20" />
+                                <p className="text-sm font-medium">No community reports yet.</p>
+                                <p className="text-xs opacity-60 mt-1">Be the first to spot a bug!</p>
+                            </div>
+                        ) : projectFeedback.map(item => (
+                            <div key={item.id} className="bg-surface border border-white/5 rounded-xl p-4 transition-all">
                                 <div className="flex items-start justify-between mb-2">
                                     <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${item.type === 'Bug' ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>{item.type}</span>
                                     <span className="text-[10px] text-zinc-600 font-mono">v{item.version}</span>
