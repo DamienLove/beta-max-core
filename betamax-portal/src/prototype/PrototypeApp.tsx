@@ -155,6 +155,23 @@ const Icon = React.memo(({ name, className = "" }: { name: string; className?: s
     <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
 ));
 
+// --- UTILS ---
+
+// Optimized: Helper to request appropriate image size from CDN (Unsplash specific)
+const getOptimizedImageUrl = (url: string, width: number) => {
+    if (!url) return "";
+    try {
+        if (url.includes('images.unsplash.com')) {
+            const u = new URL(url);
+            u.searchParams.set('w', width.toString());
+            return u.toString();
+        }
+    } catch (e) {
+        // Fallback to original URL
+    }
+    return url;
+};
+
 // --- SHARED COMPONENTS ---
 
 // Optimized: Static styles moved outside component to prevent recreation
@@ -283,7 +300,13 @@ const ProjectCard = React.memo(({ project }: { project: Project }) => {
             className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
         >
             <div className="flex items-center gap-4 p-3">
-                <img src={project.imageUrl} className="w-12 h-12 rounded-lg object-cover bg-zinc-800" alt={project.name} />
+                {/* Optimized: Load smaller image (100px) for 48px display to save bandwidth */}
+                <img
+                    src={getOptimizedImageUrl(project.imageUrl, 100)}
+                    className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
+                    alt={project.name}
+                    loading="lazy"
+                />
                 <div className="flex-1">
                     <h3 className="text-sm font-bold text-white group-hover:text-primary transition-colors">{project.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
