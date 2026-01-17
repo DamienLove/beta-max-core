@@ -1,0 +1,10 @@
+
+> beta-max@0.0.0 dev /app/betamax-portal
+> vite
+
+
+  ROLLDOWN-VITE v7.2.5  ready in 676 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+3:19:52 PM [vite] (client) hmr update /src/prototype/PrototypeApp.tsx, /src/index.css
