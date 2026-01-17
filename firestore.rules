@@ -37,7 +37,7 @@ service cloud.firestore {
     // Anomalies (Bug Reports)
     match /anomalies/{anomalyId} {
       allow create: if isSignedIn();
-      allow read: if isSignedIn(); // Architects need to read, Reporters need to read
+      allow read: if isSignedIn() && (resource.data.reporterId == request.auth.uid || resource.data.architectId == request.auth.uid);
       allow update: if isSignedIn() && (resource.data.reporterId == request.auth.uid || resource.data.architectId == request.auth.uid);
     }
 
