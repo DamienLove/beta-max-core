@@ -693,10 +693,16 @@ const FeedbackForm = () => {
                     {/* Mock Attachments */}
                     <div>
                          <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Attachments (Optional)</label>
-                         <div className="border-2 border-dashed border-white/10 rounded-xl p-8 flex flex-col items-center justify-center text-zinc-500 hover:border-white/20 hover:bg-white/5 transition-colors cursor-pointer group">
-                            <Icon name="cloud_upload" className="text-3xl mb-2 group-hover:text-primary transition-colors" />
-                            <span className="text-xs">Click to upload image or log file</span>
-                        </div>
+                         <button
+                            type="button"
+                            onClick={() => setAttachments(prev => prev.length ? [] : ['debug_log.txt'])}
+                            className={`w-full border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none group ${attachments.length ? 'border-primary/50 bg-primary/5 text-primary' : 'border-white/10 text-zinc-500 hover:border-white/20 hover:bg-white/5'}`}
+                            aria-label={attachments.length ? "Remove attachment debug_log.txt" : "Upload attachment"}
+                        >
+                            <Icon name={attachments.length ? "check_circle" : "cloud_upload"} className={`text-3xl mb-2 transition-colors ${attachments.length ? 'text-primary' : 'group-hover:text-primary'}`} />
+                            <span className="text-xs font-medium">{attachments.length ? "debug_log.txt attached" : "Click to upload image or log file"}</span>
+                            {attachments.length > 0 && <span className="text-[10px] opacity-70 mt-1">Click to remove</span>}
+                        </button>
                     </div>
                 </div>
             </main>
