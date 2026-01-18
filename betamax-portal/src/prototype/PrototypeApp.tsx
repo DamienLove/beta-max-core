@@ -605,6 +605,29 @@ const SeveritySelector = React.memo(({ severity, onChange }: { severity: 'Low' |
     </div>
 ));
 
+// Optimized: Memoized attachment uploader to prevent re-renders on text input
+const AttachmentUploader = React.memo(({
+    hasAttachment,
+    onToggle
+}: {
+    hasAttachment: boolean;
+    onToggle: () => void;
+}) => (
+    <div>
+        <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Attachments (Optional)</label>
+        <button
+            type="button"
+            onClick={onToggle}
+            className={`w-full border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none group ${hasAttachment ? 'border-primary/50 bg-primary/5 text-primary' : 'border-white/10 text-zinc-500 hover:border-white/20 hover:bg-white/5'}`}
+            aria-label={hasAttachment ? "Remove attachment debug_log.txt" : "Upload attachment"}
+        >
+            <Icon name={hasAttachment ? "check_circle" : "cloud_upload"} className={`text-3xl mb-2 transition-colors ${hasAttachment ? 'text-primary' : 'group-hover:text-primary'}`} />
+            <span className="text-xs font-medium">{hasAttachment ? "debug_log.txt attached" : "Click to upload image or log file"}</span>
+            {hasAttachment && <span className="text-[10px] opacity-70 mt-1">Click to remove</span>}
+        </button>
+    </div>
+));
+
 const FeedbackForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -619,6 +642,11 @@ const FeedbackForm = () => {
     const [severity, setSeverity] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Low');
     const [version, setVersion] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]); // Mock logic
+
+    // Optimized: Stable handler for attachment toggle
+    const toggleAttachment = useCallback(() => {
+        setAttachments(prev => prev.length ? [] : ['debug_log.txt']);
+    }, []);
 
     const project = projects.find(p => p.id === projectId) || projects[0];
     
@@ -714,19 +742,10 @@ const FeedbackForm = () => {
                     </div>
 
                     {/* Mock Attachments */}
-                    <div>
-                         <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Attachments (Optional)</label>
-                         <button
-                            type="button"
-                            onClick={() => setAttachments(prev => prev.length ? [] : ['debug_log.txt'])}
-                            className={`w-full border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none group ${attachments.length ? 'border-primary/50 bg-primary/5 text-primary' : 'border-white/10 text-zinc-500 hover:border-white/20 hover:bg-white/5'}`}
-                            aria-label={attachments.length ? "Remove attachment debug_log.txt" : "Upload attachment"}
-                        >
-                            <Icon name={attachments.length ? "check_circle" : "cloud_upload"} className={`text-3xl mb-2 transition-colors ${attachments.length ? 'text-primary' : 'group-hover:text-primary'}`} />
-                            <span className="text-xs font-medium">{attachments.length ? "debug_log.txt attached" : "Click to upload image or log file"}</span>
-                            {attachments.length > 0 && <span className="text-[10px] opacity-70 mt-1">Click to remove</span>}
-                        </button>
-                    </div>
+                    <AttachmentUploader
+                        hasAttachment={attachments.length > 0}
+                        onToggle={toggleAttachment}
+                    />
                 </div>
             </main>
         </div>
