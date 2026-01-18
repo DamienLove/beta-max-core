@@ -541,6 +541,47 @@ const ProjectDetail = () => {
     );
 };
 
+// Optimized: Memoized to prevent re-renders when other form state changes (e.g. typing in inputs)
+const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion', onChange: (t: 'Bug' | 'Suggestion') => void }) => (
+    <div className="grid grid-cols-2 gap-4 mb-6">
+        <button
+            type="button"
+            onClick={() => onChange('Bug')}
+            className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Bug' ? 'bg-danger/10 border-danger text-danger' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
+        >
+            <Icon name="bug_report" className="text-2xl" />
+            <span className="text-xs font-bold uppercase">Bug Report</span>
+        </button>
+        <button
+            type="button"
+            onClick={() => onChange('Suggestion')}
+            className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Suggestion' ? 'bg-accent/10 border-accent text-accent' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
+        >
+            <Icon name="lightbulb" className="text-2xl" />
+            <span className="text-xs font-bold uppercase">Suggestion</span>
+        </button>
+    </div>
+));
+
+// Optimized: Memoized to prevent re-renders when other form state changes
+const SeveritySelector = React.memo(({ severity, onChange }: { severity: 'Low' | 'Medium' | 'High' | 'Critical', onChange: (s: 'Low' | 'Medium' | 'High' | 'Critical') => void }) => (
+    <div>
+        <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Severity</label>
+        <div className="flex justify-between gap-2">
+            {['Low', 'Medium', 'High', 'Critical'].map(lvl => (
+                <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => onChange(lvl as any)}
+                    className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase border transition-all ${severity === lvl ? 'border-transparent text-white ' + (lvl === 'Critical' ? 'bg-danger' : lvl === 'High' ? 'bg-orange-500' : lvl === 'Medium' ? 'bg-yellow-500 text-black' : 'bg-blue-500') : 'bg-surface border-white/10 text-zinc-500'}`}
+                >
+                    {lvl}
+                </button>
+            ))}
+        </div>
+    </div>
+));
+
 const FeedbackForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -589,22 +630,7 @@ const FeedbackForm = () => {
 
             <main className="px-6 py-6 max-w-lg mx-auto w-full">
                 {/* Type Selection */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                    <button 
-                        onClick={() => setType('Bug')}
-                        className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Bug' ? 'bg-danger/10 border-danger text-danger' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
-                    >
-                        <Icon name="bug_report" className="text-2xl" />
-                        <span className="text-xs font-bold uppercase">Bug Report</span>
-                    </button>
-                    <button 
-                        onClick={() => setType('Suggestion')}
-                        className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Suggestion' ? 'bg-accent/10 border-accent text-accent' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
-                    >
-                        <Icon name="lightbulb" className="text-2xl" />
-                        <span className="text-xs font-bold uppercase">Suggestion</span>
-                    </button>
-                </div>
+                <TypeSelector type={type} onChange={setType} />
 
                 <div className="space-y-6">
                     {/* Project & Version */}
@@ -649,22 +675,7 @@ const FeedbackForm = () => {
                     </div>
 
                     {/* Severity (Bug Only) */}
-                    {type === 'Bug' && (
-                        <div>
-                            <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Severity</label>
-                            <div className="flex justify-between gap-2">
-                                {['Low', 'Medium', 'High', 'Critical'].map(lvl => (
-                                    <button 
-                                        key={lvl}
-                                        onClick={() => setSeverity(lvl as any)}
-                                        className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase border transition-all ${severity === lvl ? 'border-transparent text-white ' + (lvl === 'Critical' ? 'bg-danger' : lvl === 'High' ? 'bg-orange-500' : lvl === 'Medium' ? 'bg-yellow-500 text-black' : 'bg-blue-500') : 'bg-surface border-white/10 text-zinc-500'}`}
-                                    >
-                                        {lvl}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {type === 'Bug' && <SeveritySelector severity={severity} onChange={setSeverity} />}
 
                     {/* Description */}
                     <div>
