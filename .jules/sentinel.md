@@ -17,3 +17,8 @@
 **Vulnerability:** The root `firestore.rules` file contained permissive "TEMP" rules allowing any authenticated user to read all internal "mission" data, differing from the secure configuration in `betamax-portal/firestore.rules`.
 **Learning:** In a repo where deployment might happen from the root, having a different (and insecure) configuration file at the root level creates a high risk of accidental security regression. Developers running `firebase deploy` from the root would unknowingly overwrite secure rules with insecure ones.
 **Prevention:** In monorepos, ensure a single source of truth for infrastructure configuration or implement CI checks to enforce parity between configuration files. If multiple files must exist, they must be kept in sync.
+
+## 2025-02-26 - Excessive Data Exposure in Firestore
+**Vulnerability:** The `anomalies` collection allowed any authenticated user to read all documents (`allow read: if isSignedIn();`), exposing sensitive bug reports and logs to users who shouldn't see them.
+**Learning:** Security rules must strictly adhere to the principle of least privilege. Granting broad read access to "simplify" development or assuming "security by obscurity" (that users won't query collections they don't see in the UI) is a critical flaw. Even if the UI doesn't list the data, the API does.
+**Prevention:** Always scope read permissions to the specific owners or participants of the data (e.g., `reporterId` or `architectId`), mirroring the restrictions applied to write/update operations.
