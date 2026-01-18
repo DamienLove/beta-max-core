@@ -85,14 +85,21 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-    // Bypass login for demo/device builds: default to first mock user.
-    const [user, setUser] = useState<User | null>(MOCK_USERS[0]);
+    // SECURITY: Default to null (logged out) to prevent unauthorized access.
+    // Previous bypass (defaulting to MOCK_USERS[0]) removed to enforce authentication.
+    const [user, setUser] = useState<User | null>(null);
     const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
     const [feedback, setFeedback] = useState<FeedbackItem[]>(INITIAL_FEEDBACK);
 
     const login = useCallback((email: string) => {
-        const found = MOCK_USERS.find(u => u.email === email) || MOCK_USERS[0]; // Default to Alex if not found for demo
-        setUser(found);
+        // SECURITY: Strict email validation against mock users.
+        const found = MOCK_USERS.find(u => u.email === email);
+        if (found) {
+            setUser(found);
+        } else {
+            console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
+            // Intentionally do not set user if not found, keeping them on AuthScreen.
+        }
     }, []);
 
     const logout = useCallback(() => setUser(null), []);

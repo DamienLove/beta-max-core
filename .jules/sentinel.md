@@ -22,3 +22,8 @@
 **Vulnerability:** The `anomalies` collection allowed any authenticated user to read all documents (`allow read: if isSignedIn();`), exposing sensitive bug reports and logs to users who shouldn't see them.
 **Learning:** Security rules must strictly adhere to the principle of least privilege. Granting broad read access to "simplify" development or assuming "security by obscurity" (that users won't query collections they don't see in the UI) is a critical flaw. Even if the UI doesn't list the data, the API does.
 **Prevention:** Always scope read permissions to the specific owners or participants of the data (e.g., `reporterId` or `architectId`), mirroring the restrictions applied to write/update operations.
+
+## 2025-02-27 - Insecure Prototype Defaults (Auth Bypass)
+**Vulnerability:** The `PrototypeApp` was hardcoded to initialize the user state to an Admin user (`MOCK_USERS[0]`), effectively bypassing the authentication screen entirely for anyone visiting the app.
+**Learning:** Developers often insert "convenience" backdoors in prototypes to speed up testing (e.g., auto-login). If these prototypes are deployed or the code is copied to production, they become critical vulnerabilities. Codebase "prototypes" should still respect the security boundary of the application logic.
+**Prevention:** Always implement "Secure Defaults". Even in prototypes, default to a "logged out" or "safe" state. If bypasses are needed for dev efficiency, they must be behind explicit feature flags (e.g., environment variables) that are disabled by default.
