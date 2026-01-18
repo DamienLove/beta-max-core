@@ -796,9 +796,10 @@ interface NavItemProps {
 const NavItem = ({ icon, label, isActive, onClick }: NavItemProps) => (
     <button
         onClick={onClick}
-        className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 ${isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
+        aria-current={isActive ? 'page' : undefined}
+        className={`group flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 w-16 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${isActive ? 'text-primary' : 'text-zinc-500 hover:text-zinc-300'}`}
     >
-        <Icon name={icon} className={`text-2xl ${isActive ? 'font-bold' : ''}`} />
+        <Icon name={icon} className={`text-2xl transition-transform duration-200 group-hover:scale-110 ${isActive ? 'font-bold scale-110' : ''}`} />
         <span className="text-[10px] font-medium tracking-wide">{label}</span>
     </button>
 );
@@ -829,7 +830,7 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
                     
                     <button 
                         onClick={() => navigate('/feedback/new')} 
-                        className="relative -top-8 bg-primary hover:bg-primaryDark text-white w-14 h-14 rounded-full shadow-[0_8px_25px_rgba(59,130,246,0.4)] border-4 border-background flex items-center justify-center transition-transform active:scale-95"
+                        className="relative -top-8 bg-primary hover:bg-primaryDark text-white w-14 h-14 rounded-full shadow-[0_8px_25px_rgba(59,130,246,0.4)] border-4 border-background flex items-center justify-center transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         aria-label="Add feedback"
                     >
                         <Icon name="add" className="text-3xl" />
