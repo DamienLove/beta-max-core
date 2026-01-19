@@ -74,7 +74,7 @@ const INITIAL_FEEDBACK: FeedbackItem[] = [
 
 interface AppContextType {
     user: User | null;
-    login: (email: string) => void;
+    login: (email: string) => boolean;
     logout: () => void;
     projects: Project[];
     feedback: FeedbackItem[];
@@ -96,9 +96,11 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const found = MOCK_USERS.find(u => u.email === email);
         if (found) {
             setUser(found);
+            return true;
         } else {
             console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
             // Intentionally do not set user if not found, keeping them on AuthScreen.
+            return false;
         }
     }, []);
 
@@ -219,10 +221,15 @@ const AuthScreen = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        login(email);
+        setError(null);
+        const success = login(email);
+        if (!success) {
+            setError("Invalid email address. Please use a registered beta tester email.");
+        }
     };
 
     return (
@@ -238,6 +245,13 @@ const AuthScreen = () => {
                 
                 <h1 className="text-2xl font-bold text-white text-center mb-2">Beta Max</h1>
                 <p className="text-zinc-500 text-center text-sm mb-8">Professional Beta Testing Platform</p>
+
+                {error && (
+                    <div role="alert" className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 animate-fade-in">
+                        <Icon name="error" className="text-red-500 text-xl" />
+                        <span className="text-xs font-bold text-red-500">{error}</span>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     {!isLogin && (
