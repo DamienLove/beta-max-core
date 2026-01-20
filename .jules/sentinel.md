@@ -27,3 +27,8 @@
 **Vulnerability:** The `PrototypeApp` was hardcoded to initialize the user state to an Admin user (`MOCK_USERS[0]`), effectively bypassing the authentication screen entirely for anyone visiting the app.
 **Learning:** Developers often insert "convenience" backdoors in prototypes to speed up testing (e.g., auto-login). If these prototypes are deployed or the code is copied to production, they become critical vulnerabilities. Codebase "prototypes" should still respect the security boundary of the application logic.
 **Prevention:** Always implement "Secure Defaults". Even in prototypes, default to a "logged out" or "safe" state. If bypasses are needed for dev efficiency, they must be behind explicit feature flags (e.g., environment variables) that are disabled by default.
+
+## 2025-02-27 - Prototype Authentication Bypass (Missing Password Check)
+**Vulnerability:** The `PrototypeApp` allowed login solely based on email existence, ignoring the password field entirely. This allowed anyone to log in as admin by simply knowing the email address.
+**Learning:** "Mock" authentication in prototypes often cuts corners to save time, but it creates a dangerous habit and a trivial bypass if the code is ever reused or deployed. Even prototypes should enforce basic credential validation.
+**Prevention:** Ensure that all authentication flows, even mock ones, validate both the identifier (email) and the secret (password). Never trust client-side validation alone, and treat mock data as a contract that must be enforced.
