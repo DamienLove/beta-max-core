@@ -635,6 +635,38 @@ const AttachmentUploader = React.memo(({
     </div>
 ));
 
+// Optimized: Memoized to prevent re-renders when other form fields (like title/description) change
+const ProjectSelect = React.memo(({ projects, value, onChange }: { projects: Project[], value: string, onChange: (id: string) => void }) => (
+    <div>
+        <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+        <select
+            id="project-select"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+    </div>
+));
+
+// Optimized: Memoized to prevent re-renders when other form fields change
+const VersionSelect = React.memo(({ versions, value, onChange }: { versions: ProjectVersion[], value: string, onChange: (v: string) => void }) => (
+    <div>
+        <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+        <select
+            id="version-select"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {versions.map(v => (
+                <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+            ))}
+        </select>
+    </div>
+));
+
 const FeedbackForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -693,30 +725,8 @@ const FeedbackForm = () => {
                 <div className="space-y-6">
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
-                            <select 
-                                id="project-select"
-                                value={projectId}
-                                onChange={(e) => setProjectId(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
-                            <select 
-                                id="version-select"
-                                value={version}
-                                onChange={(e) => setVersion(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {project.versions.map(v => (
-                                    <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <ProjectSelect projects={projects} value={projectId} onChange={setProjectId} />
+                        <VersionSelect versions={project.versions} value={version} onChange={setVersion} />
                     </div>
 
                     {/* Title */}
@@ -819,7 +829,8 @@ interface NavItemProps {
     onClick: () => void;
 }
 
-const NavItem = ({ icon, label, isActive, onClick }: NavItemProps) => (
+// Optimized: Memoized to prevent re-renders of all nav items on navigation
+const NavItem = React.memo(({ icon, label, isActive, onClick }: NavItemProps) => (
     <button
         onClick={onClick}
         aria-current={isActive ? 'page' : undefined}
@@ -828,11 +839,16 @@ const NavItem = ({ icon, label, isActive, onClick }: NavItemProps) => (
         <Icon name={icon} className={`text-2xl transition-transform duration-200 group-hover:scale-110 ${isActive ? 'font-bold scale-110' : ''}`} />
         <span className="text-[10px] font-medium tracking-wide">{label}</span>
     </button>
-);
+));
 
 const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
     const navigate = useNavigate();
     const location = useLocation();
+
+    // Optimized: Stable navigation handlers to prevent unnecessary NavItem re-renders
+    const goHome = useCallback(() => navigate('/'), [navigate]);
+    const goProfile = useCallback(() => navigate('/profile'), [navigate]);
+    const goFeedback = useCallback(() => navigate('/feedback/new'), [navigate]);
     
     // Hide bottom nav on specific pages
     if (['/feedback/new'].includes(location.pathname)) {
@@ -847,15 +863,14 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
             <div className="fixed bottom-0 left-0 right-0 z-40 px-6 pb-6 pt-4 bg-gradient-to-t from-background via-background to-transparent pointer-events-none">
                 <nav className="pointer-events-auto bg-[#18181b]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex justify-between items-center px-6 py-3 max-w-md mx-auto">
                     <NavItem
-                        path="/"
                         icon="dashboard"
                         label="Home"
                         isActive={isActive('/')}
-                        onClick={() => navigate('/')}
+                        onClick={goHome}
                     />
                     
                     <button 
-                        onClick={() => navigate('/feedback/new')} 
+                        onClick={goFeedback}
                         className="relative -top-8 bg-primary hover:bg-primaryDark text-white w-14 h-14 rounded-full shadow-[0_8px_25px_rgba(59,130,246,0.4)] border-4 border-background flex items-center justify-center transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         aria-label="Add feedback"
                     >
@@ -863,11 +878,10 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
                     </button>
 
                     <NavItem
-                        path="/profile"
                         icon="person"
                         label="Profile"
                         isActive={isActive('/profile')}
-                        onClick={() => navigate('/profile')}
+                        onClick={goProfile}
                     />
                 </nav>
             </div>
