@@ -4,11 +4,16 @@ import { Project, FeedbackItem, User, ProjectVersion } from './types';
 
 // --- MOCK DATA GENERATORS ---
 
-const MOCK_USERS: User[] = [
+interface MockUser extends User {
+    password?: string;
+}
+
+const MOCK_USERS: MockUser[] = [
     {
         id: "u1",
         name: "Alex Dev",
         email: "alex@test.com",
+        password: "password123", // SECURITY: Enforce password check
         role: "tester",
         avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
         stats: { vectorPoints: 4250, rank: "Bug Hunter II", bugsSubmitted: 42, earningsUsd: 1250, accuracy: 94 }
@@ -17,6 +22,7 @@ const MOCK_USERS: User[] = [
         id: "u2",
         name: "Sarah Admin",
         email: "sarah@betamax.com",
+        password: "adminpassword", // SECURITY: Enforce password check
         role: "admin",
         avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
         stats: { vectorPoints: 9999, rank: "Admin", bugsSubmitted: 0, earningsUsd: 0, accuracy: 100 }
@@ -74,7 +80,7 @@ const INITIAL_FEEDBACK: FeedbackItem[] = [
 
 interface AppContextType {
     user: User | null;
-    login: (email: string) => void;
+    login: (email: string, password?: string) => void;
     logout: () => void;
     projects: Project[];
     feedback: FeedbackItem[];
@@ -91,10 +97,17 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
     const [feedback, setFeedback] = useState<FeedbackItem[]>(INITIAL_FEEDBACK);
 
-    const login = useCallback((email: string) => {
+    const login = useCallback((email: string, password?: string) => {
         // SECURITY: Strict email validation against mock users.
         const found = MOCK_USERS.find(u => u.email === email);
         if (found) {
+            // SECURITY: Check password if provided in mock data
+            // In a real app, this would use bcrypt.compare()
+            if (found.password && found.password !== password) {
+                console.warn(`Security: Login failed for ${email}. Invalid password.`);
+                // Intentionally do not set user
+                return;
+            }
             setUser(found);
         } else {
             console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
@@ -222,7 +235,7 @@ const AuthScreen = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        login(email);
+        login(email, password);
     };
 
     return (
