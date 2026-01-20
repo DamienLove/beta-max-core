@@ -13,3 +13,7 @@
 ## 2026-02-xx - Navigation Accessibility
 **Learning:** Custom navigation components often miss `aria-current` and focus indicators, leaving screen reader and keyboard users lost in the interface.
 **Action:** Standardized `NavItem` pattern to include `aria-current='page'` and visible focus rings, ensuring navigation is accessible to all users.
+
+## 2026-02-14 - Password Visibility Toggle
+**Learning:** The authentication screen lacked a password visibility toggle, which is critical for users with cognitive disabilities and prevents typing errors.
+**Action:** Implemented an input-embedded toggle button pattern using absolute positioning and dynamic ARIA labels, which can be reused for other sensitive inputs.
