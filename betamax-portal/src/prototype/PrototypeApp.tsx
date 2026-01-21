@@ -612,6 +612,54 @@ const SeveritySelector = React.memo(({ severity, onChange }: { severity: 'Low' |
     </div>
 ));
 
+// Optimized: Memoized to prevent re-renders when other form state changes
+const ProjectSelect = React.memo(({
+    projects,
+    selectedId,
+    onChange
+}: {
+    projects: Project[];
+    selectedId: string;
+    onChange: (id: string) => void;
+}) => (
+    <div>
+        <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+        <select
+            id="project-select"
+            value={selectedId}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+    </div>
+));
+
+// Optimized: Memoized to prevent re-renders when other form state changes
+const VersionSelect = React.memo(({
+    versions,
+    selectedVersion,
+    onChange
+}: {
+    versions: ProjectVersion[];
+    selectedVersion: string;
+    onChange: (version: string) => void;
+}) => (
+    <div>
+        <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+        <select
+            id="version-select"
+            value={selectedVersion}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {versions.map(v => (
+                <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+            ))}
+        </select>
+    </div>
+));
+
 // Optimized: Memoized attachment uploader to prevent re-renders on text input
 const AttachmentUploader = React.memo(({
     hasAttachment,
@@ -693,30 +741,16 @@ const FeedbackForm = () => {
                 <div className="space-y-6">
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
-                            <select 
-                                id="project-select"
-                                value={projectId}
-                                onChange={(e) => setProjectId(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
-                            <select 
-                                id="version-select"
-                                value={version}
-                                onChange={(e) => setVersion(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {project.versions.map(v => (
-                                    <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <ProjectSelect
+                            projects={projects}
+                            selectedId={projectId}
+                            onChange={setProjectId}
+                        />
+                        <VersionSelect
+                            versions={project.versions}
+                            selectedVersion={version}
+                            onChange={setVersion}
+                        />
                     </div>
 
                     {/* Title */}
