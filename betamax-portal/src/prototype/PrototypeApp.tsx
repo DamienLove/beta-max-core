@@ -158,8 +158,8 @@ const useApp = () => {
 
 // --- ICONS ---
 // Optimized: Memoized to prevent re-renders in lists
-const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
-    <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
+const Icon = React.memo(({ name, className = "", ariaHidden = true }: { name: string; className?: string, ariaHidden?: boolean }) => (
+    <span className={`material-symbols-outlined select-none ${className}`} aria-hidden={ariaHidden}>{name}</span>
 ));
 
 // --- UTILS ---
@@ -304,14 +304,14 @@ const ProjectCard = React.memo(({ project }: { project: Project }) => {
     return (
         <button
             onClick={() => navigate(`/project/${project.id}`)}
-            className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer"
+            className="w-full text-left group bg-surface border border-white/5 rounded-xl p-1 hover:border-white/20 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
         >
             <div className="flex items-center gap-4 p-3">
                 {/* Optimized: Load smaller image (100px) for 48px display to save bandwidth */}
                 <img
                     src={getOptimizedImageUrl(project.imageUrl, 100)}
                     className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
-                    alt={project.name}
+                    alt=""
                     loading="lazy"
                 />
                 <div className="flex-1">
