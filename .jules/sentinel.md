@@ -27,3 +27,8 @@
 **Vulnerability:** The `PrototypeApp` was hardcoded to initialize the user state to an Admin user (`MOCK_USERS[0]`), effectively bypassing the authentication screen entirely for anyone visiting the app.
 **Learning:** Developers often insert "convenience" backdoors in prototypes to speed up testing (e.g., auto-login). If these prototypes are deployed or the code is copied to production, they become critical vulnerabilities. Codebase "prototypes" should still respect the security boundary of the application logic.
 **Prevention:** Always implement "Secure Defaults". Even in prototypes, default to a "logged out" or "safe" state. If bypasses are needed for dev efficiency, they must be behind explicit feature flags (e.g., environment variables) that are disabled by default.
+
+## 2025-02-28 - Unverified Data Integrity in Firestore Creates
+**Vulnerability:** Firestore rules for `enrollments`, `anomalies`, and `external_betas` allowed any authenticated user to create documents without verifying that the `userId`, `reporterId`, or `addedBy` fields matched their own `request.auth.uid`.
+**Learning:** Checking `isSignedIn()` on create operations is insufficient. Malicious users can exploit this to create records that appear to be owned by others (spoofing), potentially corrupting data integrity or confusing downstream logic.
+**Prevention:** Always validate `request.resource.data.ownerId == request.auth.uid` in create rules to ensure users can only create data claiming to be their own.
