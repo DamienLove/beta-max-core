@@ -13,3 +13,11 @@
 ## 2026-02-xx - Navigation Accessibility
 **Learning:** Custom navigation components often miss `aria-current` and focus indicators, leaving screen reader and keyboard users lost in the interface.
 **Action:** Standardized `NavItem` pattern to include `aria-current='page'` and visible focus rings, ensuring navigation is accessible to all users.
+
+## 2026-03-05 - Icon Ligature Accessibility
+**Learning:** Material Symbols implementation (`<span>icon_name</span>`) causes screen readers to announce the raw ligature text (e.g., "arrow_back") if not explicitly hidden, creating noisy or confusing audio interfaces.
+**Action:** Default `Icon` components to `aria-hidden="true"` so they are treated as decorative by default, relying on parent buttons/labels for context.
+
+## 2026-03-05 - Redundant Image Context
+**Learning:** Decorative images inside interactive cards (like project thumbnails) often duplicate the text content immediately following them, causing double-voicing (e.g., "Project Name graphic, Project Name").
+**Action:** Explicitly set `alt=""` for images within content-rich buttons/cards where the text context is already provided.
