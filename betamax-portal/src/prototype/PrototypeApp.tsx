@@ -159,7 +159,7 @@ const useApp = () => {
 // --- ICONS ---
 // Optimized: Memoized to prevent re-renders in lists
 const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
-    <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
+    <span className={`material-symbols-outlined select-none ${className}`} aria-hidden="true">{name}</span>
 ));
 
 // --- UTILS ---
@@ -650,6 +650,9 @@ const FeedbackForm = () => {
     const [version, setVersion] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]); // Mock logic
 
+    // Validation
+    const isValid = title.trim().length > 0 && description.trim().length > 0;
+
     // Optimized: Stable handler for attachment toggle
     const toggleAttachment = useCallback(() => {
         setAttachments(prev => prev.length ? [] : ['debug_log.txt']);
@@ -665,6 +668,8 @@ const FeedbackForm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isValid) return;
+
         addFeedback({
             type,
             title,
@@ -683,7 +688,13 @@ const FeedbackForm = () => {
             <header className="px-6 py-4 bg-surface border-b border-white/5 sticky top-0 z-30 flex items-center justify-between">
                 <button onClick={() => navigate(-1)} className="text-zinc-400 text-sm hover:text-white transition-colors">Cancel</button>
                 <h1 className="text-white font-bold text-sm uppercase tracking-wider">Submit Feedback</h1>
-                <button onClick={handleSubmit} className="text-primary font-bold text-sm hover:text-primaryDark transition-colors">Post</button>
+                <button
+                    onClick={handleSubmit}
+                    disabled={!isValid}
+                    className={`text-sm font-bold transition-colors ${isValid ? 'text-primary hover:text-primaryDark' : 'text-zinc-600 cursor-not-allowed'}`}
+                >
+                    Post
+                </button>
             </header>
 
             <main className="px-6 py-6 max-w-lg mx-auto w-full">
@@ -721,10 +732,11 @@ const FeedbackForm = () => {
 
                     {/* Title */}
                     <div>
-                        <label htmlFor="title-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Title</label>
+                        <label htmlFor="title-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Title <span className="text-red-500">*</span></label>
                         <input 
                             id="title-input"
                             type="text" 
+                            required
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder={type === 'Bug' ? "e.g. App crashes on login" : "e.g. Add dark mode toggle"}
@@ -737,9 +749,10 @@ const FeedbackForm = () => {
 
                     {/* Description */}
                     <div>
-                        <label htmlFor="description-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Description / Steps</label>
+                        <label htmlFor="description-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Description / Steps <span className="text-red-500">*</span></label>
                         <textarea 
                             id="description-input"
+                            required
                             rows={6}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}

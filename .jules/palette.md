@@ -13,3 +13,11 @@
 ## 2026-02-xx - Navigation Accessibility
 **Learning:** Custom navigation components often miss `aria-current` and focus indicators, leaving screen reader and keyboard users lost in the interface.
 **Action:** Standardized `NavItem` pattern to include `aria-current='page'` and visible focus rings, ensuring navigation is accessible to all users.
+
+## 2026-03-xx - Ligature Icon Accessibility
+**Learning:** Google Material Symbols rely on ligatures (text content like "dashboard"), which screen readers pronounce if not explicitly hidden.
+**Action:** Enforced `aria-hidden="true"` on the core `Icon` component to ensure icons remain purely decorative, preventing confusing audio announcements.
+
+## 2026-03-xx - Form Validation Feedback
+**Learning:** Users could submit empty forms because the submit button provided no feedback on validity.
+**Action:** Implemented client-side validation that disables the action button and visually signals the disabled state, preventing bad data submission and guiding the user.
