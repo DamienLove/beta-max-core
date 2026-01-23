@@ -635,6 +635,38 @@ const AttachmentUploader = React.memo(({
     </div>
 ));
 
+// Optimized: Memoized project selector to prevent re-renders
+const ProjectSelect = React.memo(({ projects, value, onChange }: { projects: Project[], value: string, onChange: (id: string) => void }) => (
+    <div>
+        <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+        <select
+            id="project-select"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+    </div>
+));
+
+// Optimized: Memoized version selector to prevent re-renders
+const VersionSelect = React.memo(({ versions, value, onChange }: { versions: ProjectVersion[], value: string, onChange: (v: string) => void }) => (
+    <div>
+        <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+        <select
+            id="version-select"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {versions.map(v => (
+                <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+            ))}
+        </select>
+    </div>
+));
+
 const FeedbackForm = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -693,30 +725,16 @@ const FeedbackForm = () => {
                 <div className="space-y-6">
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
-                            <select 
-                                id="project-select"
-                                value={projectId}
-                                onChange={(e) => setProjectId(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
-                            <select 
-                                id="version-select"
-                                value={version}
-                                onChange={(e) => setVersion(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {project.versions.map(v => (
-                                    <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <ProjectSelect
+                            projects={projects}
+                            value={projectId}
+                            onChange={setProjectId}
+                        />
+                        <VersionSelect
+                            versions={project.versions}
+                            value={version}
+                            onChange={setVersion}
+                        />
                     </div>
 
                     {/* Title */}

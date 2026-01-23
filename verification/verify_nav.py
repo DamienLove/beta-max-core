@@ -12,7 +12,19 @@ def run():
         print("Navigating to app...")
         page.goto("http://localhost:5173/")
 
+        # Login if on AuthScreen
+        try:
+            if page.wait_for_selector("#auth-email", timeout=3000):
+                print("Auth screen detected. Logging in...")
+                page.fill("#auth-email", "alex@test.com")
+                page.fill("#auth-password", "anypassword")
+                page.click("button:has-text('Sign In')")
+                print("Login submitted.")
+        except Exception as e:
+            print("Auth screen not detected or error during login (might be already logged in or timing out):", e)
+
         # Wait for content to load
+        print("Waiting for Dashboard...")
         page.wait_for_selector("text=Dashboard")
 
         print("Checking for Home navigation item...")
