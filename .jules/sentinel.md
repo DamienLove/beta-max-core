@@ -27,3 +27,8 @@
 **Vulnerability:** The `PrototypeApp` was hardcoded to initialize the user state to an Admin user (`MOCK_USERS[0]`), effectively bypassing the authentication screen entirely for anyone visiting the app.
 **Learning:** Developers often insert "convenience" backdoors in prototypes to speed up testing (e.g., auto-login). If these prototypes are deployed or the code is copied to production, they become critical vulnerabilities. Codebase "prototypes" should still respect the security boundary of the application logic.
 **Prevention:** Always implement "Secure Defaults". Even in prototypes, default to a "logged out" or "safe" state. If bypasses are needed for dev efficiency, they must be behind explicit feature flags (e.g., environment variables) that are disabled by default.
+
+## 2026-01-23 - Unverified User ID on Creation
+**Vulnerability:** `enrollments`, `anomalies`, and `external_betas` collections allowed any authenticated user to create documents with arbitrary user IDs (e.g. `userId`, `reporterId`), effectively allowing users to spoof actions on behalf of others.
+**Learning:** It is a common mistake to assume that because a user is authenticated (`isSignedIn()`), they are trustworthy. Security rules must explicitly verify that the user is claiming resources for themselves, not just that they are logged in.
+**Prevention:** Always validate that the user-ID field in the incoming document (`request.resource.data.userId`) matches the authenticated user (`request.auth.uid`) during creation.
