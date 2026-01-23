@@ -74,7 +74,7 @@ const INITIAL_FEEDBACK: FeedbackItem[] = [
 
 interface AppContextType {
     user: User | null;
-    login: (email: string) => void;
+    login: (email: string) => boolean;
     logout: () => void;
     projects: Project[];
     feedback: FeedbackItem[];
@@ -96,9 +96,11 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const found = MOCK_USERS.find(u => u.email === email);
         if (found) {
             setUser(found);
+            return true;
         } else {
             console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
             // Intentionally do not set user if not found, keeping them on AuthScreen.
+            return false;
         }
     }, []);
 
@@ -159,7 +161,7 @@ const useApp = () => {
 // --- ICONS ---
 // Optimized: Memoized to prevent re-renders in lists
 const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
-    <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
+    <span className={`material-symbols-outlined select-none ${className}`} aria-hidden="true">{name}</span>
 ));
 
 // --- UTILS ---
@@ -219,10 +221,15 @@ const AuthScreen = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        login(email);
+        setError("");
+        const success = login(email);
+        if (!success) {
+            setError("Invalid credentials. Access restricted to authorized beta testers.");
+        }
     };
 
     return (
@@ -240,6 +247,12 @@ const AuthScreen = () => {
                 <p className="text-zinc-500 text-center text-sm mb-8">Professional Beta Testing Platform</p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    {error && (
+                        <div role="alert" aria-live="polite" className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center gap-2 animate-fade-in">
+                            <Icon name="error" className="text-red-500 text-lg" />
+                            <p className="text-red-500 text-xs font-bold">{error}</p>
+                        </div>
+                    )}
                     {!isLogin && (
                         <div>
                             <label htmlFor="auth-name" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Full Name</label>
