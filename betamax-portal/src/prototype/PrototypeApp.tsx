@@ -779,6 +779,30 @@ const FeedbackForm = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <ProjectSelect projects={projects} value={projectId} onChange={handleProjectChange} />
                         <VersionSelect versions={project.versions} value={version} onChange={handleVersionChange} />
+                        <div>
+                            <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+                            <select 
+                                id="project-select"
+                                value={projectId}
+                                onChange={(e) => setProjectId(e.target.value)}
+                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+                            >
+                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+                            <select 
+                                id="version-select"
+                                value={version}
+                                onChange={(e) => setVersion(e.target.value)}
+                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+                            >
+                                {project.versions.map(v => (
+                                    <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     {/* Title */}
@@ -970,3 +994,4 @@ const PrototypeApp = () => {
 };
 
 export default PrototypeApp;
+
