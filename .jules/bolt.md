@@ -13,3 +13,4 @@
 **Learning:** When using a single Context for global state, any update triggers re-renders in all consumers. Large views (like `ProjectDetail`) consuming context will re-render fully on unrelated updates (e.g., adding a version to another project).
 **Action:** Extract and memoize list items (like `ProjectFeedbackItem`) in main views to isolate them from context-driven parent re-renders.
 
+
