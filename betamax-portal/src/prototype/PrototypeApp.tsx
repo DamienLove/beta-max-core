@@ -96,9 +96,11 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
         const found = MOCK_USERS.find(u => u.email === email);
         if (found) {
             setUser(found);
+            return true;
         } else {
             console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
             // Intentionally do not set user if not found, keeping them on AuthScreen.
+            return false;
         }
     }, []);
 
@@ -159,7 +161,7 @@ const useApp = () => {
 // --- ICONS ---
 // Optimized: Memoized to prevent re-renders in lists
 const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
-    <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
+    <span className={`material-symbols-outlined select-none ${className}`} aria-hidden="true">{name}</span>
 ));
 
 // --- UTILS ---
@@ -219,10 +221,15 @@ const AuthScreen = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        login(email);
+        setError("");
+        const success = login(email);
+        if (!success) {
+            setError("Invalid credentials. Access restricted to authorized beta testers.");
+        }
     };
 
     return (
@@ -240,6 +247,12 @@ const AuthScreen = () => {
                 <p className="text-zinc-500 text-center text-sm mb-8">Professional Beta Testing Platform</p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    {error && (
+                        <div role="alert" aria-live="polite" className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-center gap-2 animate-fade-in">
+                            <Icon name="error" className="text-red-500 text-lg" />
+                            <p className="text-red-500 text-xs font-bold">{error}</p>
+                        </div>
+                    )}
                     {!isLogin && (
                         <div>
                             <label htmlFor="auth-name" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Full Name</label>
@@ -345,6 +358,7 @@ const RecentFeedbackItem = React.memo(({ item }: { item: FeedbackItem }) => (
     </div>
 ));
 
+// Optimized: Memoized to prevent re-renders in ProjectDetail list
 // Optimized: Memoized to prevent re-renders in list
 const ProjectFeedbackItem = React.memo(({ item }: { item: FeedbackItem }) => (
     <div className="bg-surface border border-white/5 rounded-xl p-4 transition-all">
@@ -576,6 +590,54 @@ const ProjectDetail = () => {
     );
 };
 
+// Optimized: Memoized to prevent re-renders when other form state changes
+const ProjectSelect = React.memo(({
+    projects,
+    value,
+    onChange
+}: {
+    projects: Project[],
+    value: string,
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}) => (
+    <div>
+        <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+        <select
+            id="project-select"
+            value={value}
+            onChange={onChange}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+    </div>
+));
+
+// Optimized: Memoized to prevent re-renders when other form state changes
+const VersionSelect = React.memo(({
+    versions,
+    value,
+    onChange
+}: {
+    versions: ProjectVersion[],
+    value: string,
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}) => (
+    <div>
+        <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+        <select
+            id="version-select"
+            value={value}
+            onChange={onChange}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {versions.map(v => (
+                <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+            ))}
+        </select>
+    </div>
+));
+
 // Optimized: Memoized to prevent re-renders when other form state changes (e.g. typing in inputs)
 const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion', onChange: (t: 'Bug' | 'Suggestion') => void }) => (
     <div className="grid grid-cols-2 gap-4 mb-6">
@@ -655,9 +717,20 @@ const FeedbackForm = () => {
     const [version, setVersion] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]); // Mock logic
 
+    const isValid = title.trim().length > 0 && description.trim().length > 0;
+
     // Optimized: Stable handler for attachment toggle
     const toggleAttachment = useCallback(() => {
         setAttachments(prev => prev.length ? [] : ['debug_log.txt']);
+    }, []);
+
+    // Optimized: Stable handlers for selectors to prevent re-renders in child components
+    const handleProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setProjectId(e.target.value);
+    }, []);
+
+    const handleVersionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setVersion(e.target.value);
     }, []);
 
     const project = projects.find(p => p.id === projectId) || projects[0];
@@ -670,6 +743,7 @@ const FeedbackForm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isValid) return;
         addFeedback({
             type,
             title,
@@ -688,7 +762,13 @@ const FeedbackForm = () => {
             <header className="px-6 py-4 bg-surface border-b border-white/5 sticky top-0 z-30 flex items-center justify-between">
                 <button onClick={() => navigate(-1)} className="text-zinc-400 text-sm hover:text-white transition-colors">Cancel</button>
                 <h1 className="text-white font-bold text-sm uppercase tracking-wider">Submit Feedback</h1>
-                <button onClick={handleSubmit} className="text-primary font-bold text-sm hover:text-primaryDark transition-colors">Post</button>
+                <button
+                    onClick={handleSubmit}
+                    disabled={!isValid}
+                    className="text-primary font-bold text-sm hover:text-primaryDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-primary"
+                >
+                    Post
+                </button>
             </header>
 
             <main className="px-6 py-6 max-w-lg mx-auto w-full">
@@ -698,6 +778,8 @@ const FeedbackForm = () => {
                 <div className="space-y-6">
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
+                        <ProjectSelect projects={projects} value={projectId} onChange={handleProjectChange} />
+                        <VersionSelect versions={project.versions} value={version} onChange={handleVersionChange} />
                         <div>
                             <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
                             <select 
@@ -913,3 +995,4 @@ const PrototypeApp = () => {
 };
 
 export default PrototypeApp;
+
