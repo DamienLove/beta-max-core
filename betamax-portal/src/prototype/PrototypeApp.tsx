@@ -571,6 +571,54 @@ const ProjectDetail = () => {
     );
 };
 
+// Optimized: Memoized to prevent re-renders when other form state changes
+const ProjectSelect = React.memo(({
+    projects,
+    value,
+    onChange
+}: {
+    projects: Project[],
+    value: string,
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}) => (
+    <div>
+        <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
+        <select
+            id="project-select"
+            value={value}
+            onChange={onChange}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+    </div>
+));
+
+// Optimized: Memoized to prevent re-renders when other form state changes
+const VersionSelect = React.memo(({
+    versions,
+    value,
+    onChange
+}: {
+    versions: ProjectVersion[],
+    value: string,
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+}) => (
+    <div>
+        <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
+        <select
+            id="version-select"
+            value={value}
+            onChange={onChange}
+            className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
+        >
+            {versions.map(v => (
+                <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
+            ))}
+        </select>
+    </div>
+));
+
 // Optimized: Memoized to prevent re-renders when other form state changes (e.g. typing in inputs)
 const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion', onChange: (t: 'Bug' | 'Suggestion') => void }) => (
     <div className="grid grid-cols-2 gap-4 mb-6">
@@ -655,6 +703,15 @@ const FeedbackForm = () => {
         setAttachments(prev => prev.length ? [] : ['debug_log.txt']);
     }, []);
 
+    // Optimized: Stable handlers for selectors to prevent re-renders in child components
+    const handleProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setProjectId(e.target.value);
+    }, []);
+
+    const handleVersionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        setVersion(e.target.value);
+    }, []);
+
     const project = projects.find(p => p.id === projectId) || projects[0];
     
     useEffect(() => {
@@ -693,30 +750,8 @@ const FeedbackForm = () => {
                 <div className="space-y-6">
                     {/* Project & Version */}
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="project-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Project</label>
-                            <select 
-                                id="project-select"
-                                value={projectId}
-                                onChange={(e) => setProjectId(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="version-select" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Version</label>
-                            <select 
-                                id="version-select"
-                                value={version}
-                                onChange={(e) => setVersion(e.target.value)}
-                                className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 focus:border-primary"
-                            >
-                                {project.versions.map(v => (
-                                    <option key={v.version} value={v.version}>{v.version} {v.isCurrent ? '(Current)' : ''}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <ProjectSelect projects={projects} value={projectId} onChange={handleProjectChange} />
+                        <VersionSelect versions={project.versions} value={version} onChange={handleVersionChange} />
                     </div>
 
                     {/* Title */}
