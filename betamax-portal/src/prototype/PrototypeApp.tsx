@@ -74,7 +74,7 @@ const INITIAL_FEEDBACK: FeedbackItem[] = [
 
 interface AppContextType {
     user: User | null;
-    login: (email: string) => void;
+    login: (email: string) => boolean;
     logout: () => void;
     projects: Project[];
     feedback: FeedbackItem[];
@@ -995,4 +995,5 @@ const PrototypeApp = () => {
 };
 
 export default PrototypeApp;
+
 
