@@ -32,3 +32,7 @@
 **Vulnerability:** `enrollments`, `anomalies`, and `external_betas` collections allowed any authenticated user to create documents with arbitrary user IDs (e.g. `userId`, `reporterId`), effectively allowing users to spoof actions on behalf of others.
 **Learning:** It is a common mistake to assume that because a user is authenticated (`isSignedIn()`), they are trustworthy. Security rules must explicitly verify that the user is claiming resources for themselves, not just that they are logged in.
 **Prevention:** Always validate that the user-ID field in the incoming document (`request.resource.data.userId`) matches the authenticated user (`request.auth.uid`) during creation.
+## 2025-05-20 - Missing Owner Check on Create
+**Vulnerability:** Firestore rules for `enrollments`, `anomalies`, and `external_betas` allowed any authenticated user to create documents without verifying that they were the owner (e.g., `userId` or `reporterId` matched `request.auth.uid`).
+**Learning:** `allow create: if isSignedIn()` is insufficient for user-owned data. It prevents unauthenticated access but allows authenticated users to spoof others by creating documents with arbitrary user IDs.
+**Prevention:** Always enforce `request.resource.data.userId == request.auth.uid` (or equivalent) in create rules.

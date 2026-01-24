@@ -13,3 +13,7 @@
 ## 2026-02-xx - Navigation Accessibility
 **Learning:** Custom navigation components often miss `aria-current` and focus indicators, leaving screen reader and keyboard users lost in the interface.
 **Action:** Standardized `NavItem` pattern to include `aria-current='page'` and visible focus rings, ensuring navigation is accessible to all users.
+
+## 2026-02-xx - Icon Ligature Accessibility
+**Learning:** Using Google Material Symbols (ligatures) without `aria-hidden="true"` causes screen readers to announce the raw ligature text (e.g., "arrow_back") instead of the button's purpose, creating confusion.
+**Action:** Enforced `aria-hidden="true"` on the base `Icon` component and ensured all interactive parent elements have explicit `aria-label` or text content.
