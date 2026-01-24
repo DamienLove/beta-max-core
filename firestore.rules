@@ -30,20 +30,21 @@ service cloud.firestore {
 
     // Enrollments
     match /enrollments/{enrollmentId} {
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.architectId == request.auth.uid);
     }
 
     // Anomalies (Bug Reports)
     match /anomalies/{anomalyId} {
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.reporterId == request.auth.uid;
       allow read: if isSignedIn() && (resource.data.reporterId == request.auth.uid || resource.data.architectId == request.auth.uid);
       allow update: if isSignedIn() && (resource.data.reporterId == request.auth.uid || resource.data.architectId == request.auth.uid);
     }
 
     // External Betas (Publicly tracked)
     match /external_betas/{betaId} {
-      allow read, create: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.addedBy == request.auth.uid;
       allow update: if isSignedIn() && resource.data.addedBy == request.auth.uid;
     }
   }
