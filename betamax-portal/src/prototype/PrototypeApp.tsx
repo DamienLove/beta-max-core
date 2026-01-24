@@ -159,7 +159,7 @@ const useApp = () => {
 // --- ICONS ---
 // Optimized: Memoized to prevent re-renders in lists
 const Icon = React.memo(({ name, className = "" }: { name: string; className?: string }) => (
-    <span className={`material-symbols-outlined select-none ${className}`}>{name}</span>
+    <span className={`material-symbols-outlined select-none ${className}`} aria-hidden="true">{name}</span>
 ));
 
 // --- UTILS ---
@@ -311,7 +311,7 @@ const ProjectCard = React.memo(({ project }: { project: Project }) => {
                 <img
                     src={getOptimizedImageUrl(project.imageUrl, 100)}
                     className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
-                    alt={project.name}
+                    alt=""
                     loading="lazy"
                 />
                 <div className="flex-1">
@@ -650,6 +650,8 @@ const FeedbackForm = () => {
     const [version, setVersion] = useState('');
     const [attachments, setAttachments] = useState<string[]>([]); // Mock logic
 
+    const isValid = title.trim().length > 0 && description.trim().length > 0;
+
     // Optimized: Stable handler for attachment toggle
     const toggleAttachment = useCallback(() => {
         setAttachments(prev => prev.length ? [] : ['debug_log.txt']);
@@ -665,6 +667,7 @@ const FeedbackForm = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isValid) return;
         addFeedback({
             type,
             title,
@@ -683,7 +686,13 @@ const FeedbackForm = () => {
             <header className="px-6 py-4 bg-surface border-b border-white/5 sticky top-0 z-30 flex items-center justify-between">
                 <button onClick={() => navigate(-1)} className="text-zinc-400 text-sm hover:text-white transition-colors">Cancel</button>
                 <h1 className="text-white font-bold text-sm uppercase tracking-wider">Submit Feedback</h1>
-                <button onClick={handleSubmit} className="text-primary font-bold text-sm hover:text-primaryDark transition-colors">Post</button>
+                <button
+                    onClick={handleSubmit}
+                    disabled={!isValid}
+                    className="text-primary font-bold text-sm hover:text-primaryDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-primary"
+                >
+                    Post
+                </button>
             </header>
 
             <main className="px-6 py-6 max-w-lg mx-auto w-full">
