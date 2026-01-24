@@ -31,6 +31,9 @@ def verify_feedback_list(page: Page):
     page.get_by_role("heading", name="Neon Wallet").click()
     expect(page.get_by_role("heading", name="Neon Wallet")).to_be_visible()
 
+    # Wait for project detail
+    page.wait_for_selector("text=Bounty Program")
+
     # Click Feedback tab
     # The tab button has text "feedback" (uppercase in CSS/rendering? Code says lowercase 'feedback' but CSS `uppercase`)
     # The text in button is {tab} which is 'feedback'.
@@ -75,3 +78,11 @@ if __name__ == "__main__":
         finally:
             browser.close()
 
+
+    # Screenshot
+    page.screenshot(path="verification/feedback_list.png")
+
+    browser.close()
+
+with sync_playwright() as playwright:
+    run(playwright)

@@ -324,7 +324,7 @@ const ProjectCard = React.memo(({ project }: { project: Project }) => {
                 <img
                     src={getOptimizedImageUrl(project.imageUrl, 100)}
                     className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
-                    alt={project.name}
+                    alt=""
                     loading="lazy"
                 />
                 <div className="flex-1">
@@ -359,7 +359,6 @@ const RecentFeedbackItem = React.memo(({ item }: { item: FeedbackItem }) => (
 ));
 
 // Optimized: Memoized to prevent re-renders in ProjectDetail list
-// Optimized: Memoized to prevent re-renders in list
 const ProjectFeedbackItem = React.memo(({ item }: { item: FeedbackItem }) => (
     <div className="bg-surface border border-white/5 rounded-xl p-4 transition-all">
         <div className="flex items-start justify-between mb-2">

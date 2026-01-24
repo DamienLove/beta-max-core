@@ -27,3 +27,8 @@
 **Vulnerability:** The `PrototypeApp` was hardcoded to initialize the user state to an Admin user (`MOCK_USERS[0]`), effectively bypassing the authentication screen entirely for anyone visiting the app.
 **Learning:** Developers often insert "convenience" backdoors in prototypes to speed up testing (e.g., auto-login). If these prototypes are deployed or the code is copied to production, they become critical vulnerabilities. Codebase "prototypes" should still respect the security boundary of the application logic.
 **Prevention:** Always implement "Secure Defaults". Even in prototypes, default to a "logged out" or "safe" state. If bypasses are needed for dev efficiency, they must be behind explicit feature flags (e.g., environment variables) that are disabled by default.
+
+## 2025-05-20 - Missing Owner Check on Create
+**Vulnerability:** Firestore rules for `enrollments`, `anomalies`, and `external_betas` allowed any authenticated user to create documents without verifying that they were the owner (e.g., `userId` or `reporterId` matched `request.auth.uid`).
+**Learning:** `allow create: if isSignedIn()` is insufficient for user-owned data. It prevents unauthenticated access but allows authenticated users to spoof others by creating documents with arbitrary user IDs.
+**Prevention:** Always enforce `request.resource.data.userId == request.auth.uid` (or equivalent) in create rules.
