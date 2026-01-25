@@ -221,6 +221,7 @@ const AuthScreen = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -278,15 +279,25 @@ const AuthScreen = () => {
                     </div>
                     <div>
                         <label htmlFor="auth-password" className="block text-xs font-bold text-zinc-400 uppercase mb-1">Password</label>
-                        <input 
-                            id="auth-password"
-                            type="password" 
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full bg-surfaceHighlight border border-white/10 rounded-lg p-3 text-white text-sm focus:border-primary transition-colors" 
-                            placeholder="••••••••" 
-                        />
+                        <div className="relative">
+                            <input
+                                id="auth-password"
+                                type={showPassword ? "text" : "password"}
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full bg-surfaceHighlight border border-white/10 rounded-lg p-3 pr-10 text-white text-sm focus:border-primary transition-colors"
+                                placeholder="••••••••"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                <Icon name={showPassword ? "visibility" : "visibility_off"} className="text-xl" />
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" className="mt-2 w-full bg-primary hover:bg-primaryDark text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-primary/25">
