@@ -36,3 +36,8 @@
 **Vulnerability:** Firestore rules for `enrollments`, `anomalies`, and `external_betas` allowed any authenticated user to create documents without verifying that they were the owner (e.g., `userId` or `reporterId` matched `request.auth.uid`).
 **Learning:** `allow create: if isSignedIn()` is insufficient for user-owned data. It prevents unauthenticated access but allows authenticated users to spoof others by creating documents with arbitrary user IDs.
 **Prevention:** Always enforce `request.resource.data.userId == request.auth.uid` (or equivalent) in create rules.
+
+## 2026-02-01 - Privilege Escalation via User Profile Updates
+**Vulnerability:** The `users` collection allowed any authenticated user to write to their own document (`allow write: if isOwner(userId);`), which implicitly included the ability to change the `role` field (e.g., from 'tester' to 'developer'), leading to privilege escalation.
+**Learning:** Generic `write` permissions are dangerous for user profiles where sensitive claims (like roles or credits) are stored alongside editable profile data (like names). Also, when splitting `write` into `create`/`update`, great care must be taken to handle missing fields in existing documents using `resource.data.get()` to avoid locking users out of updates.
+**Prevention:** Split `write` into specific operations. Explicitly validate that sensitive fields are not present in the `request.resource.data` or match the existing value during updates. Use `.get()` with defaults to handle schema evolution safely.
