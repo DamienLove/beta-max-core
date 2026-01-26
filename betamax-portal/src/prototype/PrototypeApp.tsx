@@ -379,6 +379,28 @@ const ProjectFeedbackItem = React.memo(({ item }: { item: FeedbackItem }) => (
     </div>
 ));
 
+// Optimized: Memoized to prevent re-renders of complex changelog items
+const ChangelogItem = React.memo(({ version }: { version: ProjectVersion }) => (
+    <div className="relative pl-10">
+        <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 border-background flex items-center justify-center ${version.isCurrent ? 'bg-primary' : 'bg-zinc-700'}`}>
+            {version.isCurrent && <div className="w-2 h-2 bg-white rounded-full"></div>}
+        </div>
+        <div className="flex items-center gap-3 mb-2">
+            <h3 className={`text-lg font-bold font-mono ${version.isCurrent ? 'text-white' : 'text-zinc-500'}`}>{version.version}</h3>
+            {version.isCurrent && <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded uppercase font-bold">Current</span>}
+            <span className="text-xs text-zinc-600 ml-auto">{version.releaseDate}</span>
+        </div>
+        <ul className="space-y-1">
+            {version.changelog.map((log, i) => (
+                <li key={i} className="text-sm text-zinc-400 flex items-start gap-2">
+                    <span className="text-zinc-600 mt-1.5">•</span>
+                    {log}
+                </li>
+            ))}
+        </ul>
+    </div>
+));
+
 const Dashboard = () => {
     const navigate = useNavigate();
     const { user, projects, feedback } = useApp();
@@ -537,24 +559,7 @@ const ProjectDetail = () => {
                     <div className="space-y-8 relative">
                         <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-white/5"></div>
                         {project.versions.map((ver, idx) => (
-                            <div key={ver.version} className="relative pl-10">
-                                <div className={`absolute left-0 top-1.5 w-6 h-6 rounded-full border-4 border-background flex items-center justify-center ${ver.isCurrent ? 'bg-primary' : 'bg-zinc-700'}`}>
-                                    {ver.isCurrent && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                </div>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h3 className={`text-lg font-bold font-mono ${ver.isCurrent ? 'text-white' : 'text-zinc-500'}`}>{ver.version}</h3>
-                                    {ver.isCurrent && <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded uppercase font-bold">Current</span>}
-                                    <span className="text-xs text-zinc-600 ml-auto">{ver.releaseDate}</span>
-                                </div>
-                                <ul className="space-y-1">
-                                    {ver.changelog.map((log, i) => (
-                                        <li key={i} className="text-sm text-zinc-400 flex items-start gap-2">
-                                            <span className="text-zinc-600 mt-1.5">•</span>
-                                            {log}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <ChangelogItem key={ver.version} version={ver} />
                         ))}
                     </div>
                 )}
