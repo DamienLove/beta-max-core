@@ -214,6 +214,14 @@ const StatusBadge = React.memo(({ status, type = 'status' }: { status: string, t
     );
 });
 
+// Optimized: Memoized to prevent re-renders in ProjectDetail features list
+const FeatureItem = React.memo(({ feature }: { feature: string }) => (
+    <div className="flex items-center gap-3 p-3 bg-surface border border-white/5 rounded-lg">
+        <Icon name="check_circle" className="text-emerald-500 text-sm" />
+        <span className="text-sm text-zinc-200">{feature}</span>
+    </div>
+));
+
 // --- AUTH SCREENS ---
 
 const AuthScreen = () => {
@@ -548,10 +556,7 @@ const ProjectDetail = () => {
                             <h3 className="text-xs font-bold text-zinc-500 uppercase mb-3">Testing Scope</h3>
                             <div className="space-y-2">
                                 {project.features.map(f => (
-                                    <div key={f} className="flex items-center gap-3 p-3 bg-surface border border-white/5 rounded-lg">
-                                        <Icon name="check_circle" className="text-emerald-500 text-sm" />
-                                        <span className="text-sm text-zinc-200">{f}</span>
-                                    </div>
+                                    <FeatureItem key={f} feature={f} />
                                 ))}
                             </div>
                         </div>
