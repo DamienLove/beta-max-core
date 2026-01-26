@@ -17,3 +17,7 @@
 ## 2026-02-xx - Icon Ligature Accessibility
 **Learning:** Using Google Material Symbols (ligatures) without `aria-hidden="true"` causes screen readers to announce the raw ligature text (e.g., "arrow_back") instead of the button's purpose, creating confusion.
 **Action:** Enforced `aria-hidden="true"` on the base `Icon` component and ensured all interactive parent elements have explicit `aria-label` or text content.
+
+## 2026-02-14 - Layout Occlusion by Floating Elements
+**Learning:** Fixed bottom navigation elements and FABs can easily obscure the last item in a scrollable list, rendering actions (like buttons in empty states) inaccessible. Standard padding (e.g., `pb-24`) may be insufficient when stacking multiple fixed elements.
+**Action:** When designing near the bottom edge of a viewport with floating overlays, always verify the bottom padding allows for over-scrolling so the last interactive element clears all overlays. Increased container padding to `pb-32` resolved this.

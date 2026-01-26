@@ -420,7 +420,7 @@ const Dashboard = () => {
     const myFeedback = useMemo(() => feedback.filter(f => f.reporterId === user?.id), [feedback, user?.id]);
 
     return (
-        <div className="flex flex-col min-h-screen pb-24 font-sans bg-background">
+        <div className="flex flex-col min-h-screen pb-32 font-sans bg-background">
             <header className="px-6 py-6 flex justify-between items-center bg-surface/30 backdrop-blur-sm sticky top-0 z-20 border-b border-white/5">
                 <div>
                     <h1 className="text-lg font-bold text-white tracking-tight">Dashboard</h1>
@@ -471,8 +471,16 @@ const Dashboard = () => {
                     <h2 className="text-sm font-bold text-zinc-300 uppercase tracking-wider mb-4">Your Recent Feedback</h2>
                     <div className="flex flex-col gap-3">
                         {myFeedback.length === 0 ? (
-                            <div className="text-center py-8 text-zinc-600 text-sm border border-dashed border-white/5 rounded-xl">
-                                No feedback submitted yet.
+                            <div className="flex flex-col items-center justify-center py-8 text-zinc-500 border border-dashed border-white/5 rounded-xl bg-surface/30">
+                                <Icon name="history_edu" className="text-3xl mb-2 opacity-20" />
+                                <p className="text-sm font-medium">No recent activity</p>
+                                <p className="text-xs opacity-60 mt-1 mb-3">Your submitted reports will appear here</p>
+                                <button
+                                    onClick={() => navigate('/feedback/new')}
+                                    className="text-xs bg-primary/10 text-primary px-3 py-1.5 rounded-full font-bold hover:bg-primary/20 transition-colors"
+                                >
+                                    Submit Report
+                                </button>
                             </div>
                         ) : myFeedback.slice(0, 5).map(item => (
                             <RecentFeedbackItem key={item.id} item={item} />
