@@ -1,5 +1,5 @@
 import time
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect, TimeoutError
 
 def run():
     with sync_playwright() as p:
@@ -11,24 +11,19 @@ def run():
 
         # Login
         try:
-            if page.wait_for_selector("#auth-email", timeout=3000):
-                print("Logging in...")
-                page.fill("#auth-email", "alex@test.com")
-                page.fill("#auth-password", "any")
-                page.click("button:has-text('Sign In')")
-        except:
-            print("Already logged in or no auth screen.")
+            # Check if auth screen is present
+            page.wait_for_selector("#auth-email", timeout=3000)
+            print("Logging in...")
+            page.fill("#auth-email", "alex@test.com")
+            page.fill("#auth-password", "any")
+            page.click("button:has-text('Sign In')")
+        except TimeoutError:
+            print("Already logged in or no auth screen (Timeout).")
 
         print("Waiting for Dashboard...")
         page.wait_for_selector("text=Dashboard")
 
         print("Navigating to Feedback Form...")
-        # There is a + button in the bottom nav or a "Submit Feedback" link?
-        # In Dashboard, there is no direct link except maybe via FAB in ProjectDetail or bottom nav.
-        # NavigationWrapper has a FAB for '/feedback/new'.
-        # It has aria-label="Add feedback".
-        # Note: The bottom nav might be covered or off screen? No, fixed position.
-        # Use aria-label to find the button.
         page.click("button[aria-label='Add feedback']")
 
         print("Waiting for Feedback Form...")
@@ -47,17 +42,17 @@ def run():
         print(f"Initial Version: {initial_version}")
 
         # Change Project
-        # Find another project ID.
         # I know mock data: p1 (Neon Wallet) and p2 (Titan OS Kernel).
         new_project = "p2" if initial_project == "p1" else "p1"
         print(f"Changing Project to {new_project}...")
         project_select.select_option(new_project)
 
         # Verify Version updated
-        # p1 has versions 4.2.0-beta, 4.1.5-alpha
-        # p2 has version 0.9.1-alpha
+        # Wait for the version value to change from the initial value
+        # This replaces the fragile time.sleep(1)
+        print("Waiting for version update...")
+        expect(version_select).not_to_have_value(initial_version, timeout=5000)
 
-        time.sleep(1) # Wait for react update
         new_version = version_select.input_value()
         print(f"New Version: {new_version}")
 
@@ -76,7 +71,9 @@ def run():
         # Verify Typing in Title doesn't reset Project
         print("Typing in Title...")
         page.fill("#title-input", "Test Bug Title")
-        time.sleep(0.5)
+        # Give it a tiny moment to ensure any reactive effects would trigger (though we expect none)
+        # We can't really "wait" for something NOT to happen, but we can verify state after action.
+        page.wait_for_timeout(500)
 
         current_project = project_select.input_value()
         if current_project == new_project:

@@ -1,5 +1,5 @@
 import time
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright, expect, TimeoutError
 
 def run():
     with sync_playwright() as p:
@@ -14,14 +14,16 @@ def run():
 
         # Login if on AuthScreen
         try:
+            # wait_for_selector raises TimeoutError if not found
             if page.wait_for_selector("#auth-email", timeout=3000):
                 print("Auth screen detected. Logging in...")
                 page.fill("#auth-email", "alex@test.com")
                 page.fill("#auth-password", "anypassword")
                 page.click("button:has-text('Sign In')")
                 print("Login submitted.")
-        except Exception as e:
-            print("Auth screen not detected or error during login (might be already logged in or timing out):", e)
+        except TimeoutError:
+             # This is expected if already logged in
+             print("Auth screen not detected (Timeout), assuming already logged in.")
 
         # Wait for content to load
         print("Waiting for Dashboard...")
