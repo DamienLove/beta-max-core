@@ -2,6 +2,11 @@ import time
 from playwright.sync_api import sync_playwright, expect, TimeoutError
 
 def run():
+    """
+    Run end-to-end verification of the application's navigation and ARIA state using Playwright.
+    
+    Performs an optional sign-in if an authentication screen appears, waits for the dashboard to load, checks that the "Home" navigation button has aria-current="page", focuses and captures a screenshot of the navigation area, navigates to "Profile", verifies that the "Profile" navigation button has aria-current="page", captures a profile navigation screenshot, prints progress and results, and closes the browser. Screenshots are saved to verification/nav_focus.png and verification/nav_profile.png.
+    """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()

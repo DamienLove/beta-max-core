@@ -2,6 +2,11 @@ import time
 from playwright.sync_api import sync_playwright, expect, TimeoutError
 
 def run():
+    """
+    Run an end-to-end Playwright verification of the feedback form in the local app.
+    
+    Performs a full UI check against http://localhost:5173: optionally authenticates if an auth screen appears, opens the Submit Feedback form, reads the project and version select values, switches the project selection and verifies the version updates to the expected mapping, types into the title input and verifies the project selection remains stable, saves a screenshot to verification/feedback_form.png, and prints success/failure diagnostics to stdout.
+    """
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
