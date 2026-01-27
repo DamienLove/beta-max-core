@@ -41,3 +41,8 @@
 **Vulnerability:** The `users` collection allowed any authenticated user to write to their own document (`allow write: if isOwner(userId);`), which implicitly included the ability to change the `role` field (e.g., from 'tester' to 'developer'), leading to privilege escalation.
 **Learning:** Generic `write` permissions are dangerous for user profiles where sensitive claims (like roles or credits) are stored alongside editable profile data (like names). Also, when splitting `write` into `create`/`update`, great care must be taken to handle missing fields in existing documents using `resource.data.get()` to avoid locking users out of updates.
 **Prevention:** Split `write` into specific operations. Explicitly validate that sensitive fields are not present in the `request.resource.data` or match the existing value during updates. Use `.get()` with defaults to handle schema evolution safely.
+
+## 2026-03-01 - Client-Side Secrets in Prototypes
+**Vulnerability:** Found hardcoded plaintext passwords in `PrototypeApp.tsx` (even after "fixing" the auth bypass, storing them in plaintext was a risk).
+**Learning:** Client-side prototypes often require "secrets" for mock authentication. Storing them as plaintext in the bundle is a security bad practice that can easily leak into production if code is copy-pasted.
+**Prevention:** Even for mocks, use hashing (e.g., SHA-256 via `crypto.subtle`) to store credentials. This enforces the "do not store plaintext passwords" rule and simulates real-world async authentication flows (since hashing is async).
