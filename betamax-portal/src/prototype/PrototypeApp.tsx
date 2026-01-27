@@ -492,6 +492,88 @@ const Dashboard = () => {
     );
 };
 
+// Optimized: Memoized feature item to prevent list re-renders
+const FeatureItem = React.memo(({ feature }: { feature: string }) => (
+    <div className="flex items-center gap-3 p-3 bg-surface border border-white/5 rounded-lg">
+        <Icon name="check_circle" className="text-emerald-500 text-sm" />
+        <span className="text-sm text-zinc-200">{feature}</span>
+    </div>
+));
+
+// Optimized: Extracted to prevent re-renders when parent (ProjectDetail) updates
+const ProjectOverview = React.memo(({ project }: { project: Project }) => (
+    <div className="space-y-6">
+        <div className="bg-surface border border-white/5 rounded-xl p-4">
+            <h3 className="text-xs font-bold text-zinc-500 uppercase mb-2">Description</h3>
+            <p className="text-sm text-zinc-300 leading-relaxed">{project.description}</p>
+        </div>
+
+        <div>
+            <h3 className="text-xs font-bold text-zinc-500 uppercase mb-3">Testing Scope</h3>
+            <div className="space-y-2">
+                {project.features.map(f => (
+                    <FeatureItem key={f} feature={f} />
+                ))}
+            </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
+            <div>
+                <p className="text-xs text-primary font-bold uppercase">Bounty Program</p>
+                <p className="text-sm text-zinc-300 mt-1">Earn up to <span className="text-white font-bold">${project.payout}</span> per verified bug.</p>
+            </div>
+            <Icon name="monetization_on" className="text-3xl text-primary" />
+        </div>
+    </div>
+));
+
+// Optimized: Extracted to prevent re-renders
+const ProjectChangelog = React.memo(({ versions }: { versions: ProjectVersion[] }) => (
+    <div className="space-y-8 relative">
+        <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-white/5"></div>
+        {versions.map((ver) => (
+            <ChangelogItem key={ver.version} version={ver} />
+        ))}
+    </div>
+));
+
+// Optimized: Extracted to prevent re-renders
+const ProjectFeedbackList = React.memo(({
+    feedback,
+    projectId
+}: {
+    feedback: FeedbackItem[],
+    projectId: string
+}) => {
+    const navigate = useNavigate();
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="text-xs font-bold text-zinc-500 uppercase">Community Reports</h3>
+                <span className="text-xs text-zinc-600">{feedback.length} item{feedback.length !== 1 ? 's' : ''}</span>
+            </div>
+            {feedback.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-zinc-500 border border-dashed border-white/5 rounded-xl bg-surface/30">
+                    <Icon name="inbox" className="text-4xl mb-2 opacity-20" />
+                    <p className="text-sm font-medium">No community reports yet.</p>
+                    <p className="text-xs opacity-60 mt-1">Be the first to spot a bug!</p>
+                </div>
+            ) : feedback.map(item => (
+                <ProjectFeedbackItem key={item.id} item={item} />
+            ))}
+
+            <button
+                onClick={() => navigate('/feedback/new', { state: { projectId } })}
+                className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-[0_4px_20px_rgba(59,130,246,0.5)] flex items-center justify-center hover:scale-105 transition-transform z-30"
+                aria-label="Add feedback"
+            >
+                <Icon name="add" className="text-2xl" />
+            </button>
+        </div>
+    );
+});
+
 const ProjectDetail = () => {
     const { id } = useParams(); // Should be from route
     const navigate = useNavigate();
@@ -545,69 +627,9 @@ const ProjectDetail = () => {
 
             {/* Content */}
             <div className="px-6 py-6 animate-fade-in">
-                {activeTab === 'overview' && (
-                    <div className="space-y-6">
-                        <div className="bg-surface border border-white/5 rounded-xl p-4">
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase mb-2">Description</h3>
-                            <p className="text-sm text-zinc-300 leading-relaxed">{project.description}</p>
-                        </div>
-                        
-                        <div>
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase mb-3">Testing Scope</h3>
-                            <div className="space-y-2">
-                                {project.features.map(f => (
-                                    <div key={f} className="flex items-center gap-3 p-3 bg-surface border border-white/5 rounded-lg">
-                                        <Icon name="check_circle" className="text-emerald-500 text-sm" />
-                                        <span className="text-sm text-zinc-200">{f}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-4 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs text-primary font-bold uppercase">Bounty Program</p>
-                                <p className="text-sm text-zinc-300 mt-1">Earn up to <span className="text-white font-bold">${project.payout}</span> per verified bug.</p>
-                            </div>
-                            <Icon name="monetization_on" className="text-3xl text-primary" />
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'changelog' && (
-                    <div className="space-y-8 relative">
-                        <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-white/5"></div>
-                        {project.versions.map((ver, idx) => (
-                            <ChangelogItem key={ver.version} version={ver} />
-                        ))}
-                    </div>
-                )}
-
-                {activeTab === 'feedback' && (
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase">Community Reports</h3>
-                            <span className="text-xs text-zinc-600">{projectFeedback.length} item{projectFeedback.length !== 1 ? 's' : ''}</span>
-                        </div>
-                        {projectFeedback.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-zinc-500 border border-dashed border-white/5 rounded-xl bg-surface/30">
-                                <Icon name="inbox" className="text-4xl mb-2 opacity-20" />
-                                <p className="text-sm font-medium">No community reports yet.</p>
-                                <p className="text-xs opacity-60 mt-1">Be the first to spot a bug!</p>
-                            </div>
-                        ) : projectFeedback.map(item => (
-                            <ProjectFeedbackItem key={item.id} item={item} />
-                        ))}
-                        
-                        <button
-                            onClick={() => navigate('/feedback/new', { state: { projectId: project.id } })}
-                            className="fixed bottom-24 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-[0_4px_20px_rgba(59,130,246,0.5)] flex items-center justify-center hover:scale-105 transition-transform z-30"
-                            aria-label="Add feedback"
-                        >
-                            <Icon name="add" className="text-2xl" />
-                        </button>
-                    </div>
-                )}
+                {activeTab === 'overview' && <ProjectOverview project={project} />}
+                {activeTab === 'changelog' && <ProjectChangelog versions={project.versions} />}
+                {activeTab === 'feedback' && <ProjectFeedbackList feedback={projectFeedback} projectId={project.id} />}
             </div>
         </div>
     );
