@@ -600,7 +600,7 @@ const ProjectDetail = () => {
                     >
                         <Icon name="arrow_back" />
                     </button>
-                    {user?.role === 'admin' && <button className="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-bold border border-primary/30">Admin Mode</button>}
+                    {user?.role === 'admin' && <span role="status" className="text-xs bg-primary/20 text-primary px-3 py-1 rounded-full font-bold border border-primary/30 select-none">Admin Mode</span>}
                 </div>
                 <div className="absolute bottom-4 left-6">
                     <h1 className="text-2xl font-bold text-white mb-1">{project.name}</h1>
@@ -829,7 +829,9 @@ const FeedbackForm = () => {
 
                     {/* Title */}
                     <div>
-                        <label htmlFor="title-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Title</label>
+                        <label htmlFor="title-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">
+                            Title <span className="text-red-500 ml-0.5">*</span>
+                        </label>
                         <input 
                             id="title-input"
                             type="text" 
@@ -845,7 +847,9 @@ const FeedbackForm = () => {
 
                     {/* Description */}
                     <div>
-                        <label htmlFor="description-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Description / Steps</label>
+                        <label htmlFor="description-input" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">
+                            Description / Steps <span className="text-red-500 ml-0.5">*</span>
+                        </label>
                         <textarea 
                             id="description-input"
                             rows={6}
@@ -854,6 +858,7 @@ const FeedbackForm = () => {
                             placeholder="Detailed explanation..."
                             className="w-full bg-surface border border-white/10 rounded-lg text-white text-sm p-3 placeholder-zinc-600 focus:border-primary font-mono"
                         />
+                        <div className="text-right text-[10px] text-zinc-600 mt-1 font-mono">{description.length} chars</div>
                     </div>
 
                     {/* Mock Attachments */}
