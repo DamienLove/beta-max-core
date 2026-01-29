@@ -685,9 +685,11 @@ const VersionSelect = React.memo(({
 
 // Optimized: Memoized to prevent re-renders when other form state changes (e.g. typing in inputs)
 const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion', onChange: (t: 'Bug' | 'Suggestion') => void }) => (
-    <div className="grid grid-cols-2 gap-4 mb-6">
+    <div role="radiogroup" aria-label="Feedback Type" className="grid grid-cols-2 gap-4 mb-6">
         <button
             type="button"
+            role="radio"
+            aria-checked={type === 'Bug'}
             onClick={() => onChange('Bug')}
             className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Bug' ? 'bg-danger/10 border-danger text-danger' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
         >
@@ -696,6 +698,8 @@ const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion
         </button>
         <button
             type="button"
+            role="radio"
+            aria-checked={type === 'Suggestion'}
             onClick={() => onChange('Suggestion')}
             className={`p-4 rounded-xl border flex flex-col items-center gap-2 transition-all ${type === 'Suggestion' ? 'bg-accent/10 border-accent text-accent' : 'bg-surface border-white/5 text-zinc-500 hover:bg-surfaceHighlight'}`}
         >
@@ -707,13 +711,15 @@ const TypeSelector = React.memo(({ type, onChange }: { type: 'Bug' | 'Suggestion
 
 // Optimized: Memoized to prevent re-renders when other form state changes
 const SeveritySelector = React.memo(({ severity, onChange }: { severity: 'Low' | 'Medium' | 'High' | 'Critical', onChange: (s: 'Low' | 'Medium' | 'High' | 'Critical') => void }) => (
-    <div>
-        <label className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Severity</label>
+    <div role="radiogroup" aria-labelledby="severity-label">
+        <label id="severity-label" className="block text-zinc-500 text-[10px] font-bold uppercase mb-2">Severity</label>
         <div className="flex justify-between gap-2">
             {['Low', 'Medium', 'High', 'Critical'].map(lvl => (
                 <button
                     key={lvl}
                     type="button"
+                    role="radio"
+                    aria-checked={severity === lvl}
                     onClick={() => onChange(lvl as any)}
                     className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase border transition-all ${severity === lvl ? 'border-transparent text-white ' + (lvl === 'Critical' ? 'bg-danger' : lvl === 'High' ? 'bg-orange-500' : lvl === 'Medium' ? 'bg-yellow-500 text-black' : 'bg-blue-500') : 'bg-surface border-white/10 text-zinc-500'}`}
                 >
