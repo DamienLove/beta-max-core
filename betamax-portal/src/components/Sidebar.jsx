@@ -5,7 +5,8 @@ import {
   Code, 
   LogOut, 
   Database,
-  Globe
+  Globe,
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { auth } from '../firebase';
@@ -13,6 +14,7 @@ import { signOut } from 'firebase/auth';
 
 export default function Sidebar({ view, setView }) {
   const { profile } = useAuth();
+  const playStoreUrl = "https://play.google.com/store/apps/details?id=com.betamax.core";
 
   const handleLogout = () => {
     signOut(auth);
@@ -63,6 +65,14 @@ export default function Sidebar({ view, setView }) {
 
       {/* User Footer */}
       <div className="p-4 border-t border-cyan-900/30 space-y-4 bg-black/20">
+         <a
+           href={playStoreUrl}
+           target="_blank"
+           rel="noreferrer"
+           className="flex items-center gap-2 text-[10px] text-cyan-500 hover:text-cyan-300 uppercase tracking-widest w-full px-2 py-2 hover:bg-cyan-950/30 rounded transition-colors"
+         >
+           <Smartphone size={12} /> Get_Android_App
+         </a>
          <div className="flex items-center gap-3">
            <div className={`w-8 h-8 rounded flex items-center justify-center border uppercase font-bold
              ${profile?.role === 'developer' ? 'bg-fuchsia-900/30 border-fuchsia-500 text-fuchsia-400' : 'bg-cyan-900/30 border-cyan-500 text-cyan-400'}`}>

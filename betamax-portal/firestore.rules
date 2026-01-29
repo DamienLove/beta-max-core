@@ -28,8 +28,13 @@ service cloud.firestore {
       allow create: if isSignedIn() && getUserData().role == 'developer';
       allow update, delete: if isSignedIn() && resource.data.architectId == request.auth.uid;
 
-      // FIXED: Tightened back to role/tier checks.
-      allow read, list: if isSignedIn() && (resource.data.architectId == request.auth.uid || getUserData().role == 'developer');
+      // Allow developers full access to their missions and testers to active missions.
+      allow read, list: if isSignedIn()
+        && (
+          resource.data.architectId == request.auth.uid
+          || getUserData().role == 'developer'
+          || (getUserData().role == 'tester' && resource.data.status == 'ACTIVE')
+        );
     }
 
     // Enrollments

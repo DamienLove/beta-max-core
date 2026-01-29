@@ -25,16 +25,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.betamax.core.ui.theme.*
-
-import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.betamax.core.BuildConfig
+import com.betamax.core.auth.UserProfile
 import com.betamax.core.data.ReconScanner
-import com.betamax.core.ui.theme.*
 import kotlinx.coroutines.launch
 
 @Composable
-fun TerminalScreen(viewModel: DashboardViewModel = viewModel()) {
+fun TerminalScreen(
+    profile: UserProfile,
+    viewModel: DashboardViewModel = viewModel()
+) {
     val missions by viewModel.missions.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -47,7 +49,12 @@ fun TerminalScreen(viewModel: DashboardViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         RetroWindow {
-            TerminalContent(missions, scanner, scope)
+            TerminalContent(
+                missions = missions,
+                scanner = scanner,
+                scope = scope,
+                profile = profile
+            )
         }
     }
 }
@@ -126,18 +133,27 @@ fun WindowButton(color: Color) {
 fun TerminalContent(
     missions: List<com.betamax.core.data.Mission>,
     scanner: ReconScanner,
-    scope: kotlinx.coroutines.CoroutineScope
+    scope: kotlinx.coroutines.CoroutineScope,
+    profile: UserProfile
 ) {
     var input by remember { mutableStateOf("") }
-    var lines by remember { mutableStateOf(listOf(
-        "BETA MAX [Version 2.0.0 NATIVE]",
-        "(c) 2026 Damien Nichols. All rights reserved.",
-        "",
-        "Authenticating...",
-        "User_Zero detected. Access Level 3 granted.",
-        "Type 'help' for available commands.",
-        ""
-    )) }
+    val handle = remember(profile) {
+        val display = profile.displayName.ifBlank { profile.email.substringBefore("@") }
+        if (display.isBlank()) "Scout" else display
+    }
+    var lines by remember {
+        mutableStateOf(
+            listOf(
+                "BETA MAX [Version ${BuildConfig.VERSION_NAME} NATIVE]",
+                "(c) 2026 Beta Max Core. All rights reserved.",
+                "",
+                "Authenticating...",
+                "User $handle detected. Access Level ${profile.skillData.tier} granted.",
+                "Type 'help' for available commands.",
+                ""
+            )
+        )
+    }
     
     val listState = rememberLazyListState()
 

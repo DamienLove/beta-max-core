@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -26,14 +25,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.betamax.core.R
+import com.betamax.core.auth.UserProfile
 import com.betamax.core.data.Mission
 import com.betamax.core.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VisualDashboard(viewModel: DashboardViewModel = viewModel()) {
+fun VisualDashboard(
+    profile: UserProfile,
+    viewModel: DashboardViewModel = viewModel()
+) {
     val missions by viewModel.missions.collectAsState()
     val isLoading by viewModel.loading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     val featuredMission = missions.firstOrNull()
     val newMissions = missions.take(5)
@@ -104,7 +108,29 @@ fun VisualDashboard(viewModel: DashboardViewModel = viewModel()) {
             }
 
             item {
-                MissionControlStats()
+                MissionControlStats(
+                    activeCount = missions.size,
+                    credits = profile.credits,
+                    tier = profile.skillData.tier
+                )
+            }
+
+            if (error != null) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2B0A0A))
+                    ) {
+                        Text(
+                            text = error ?: "Unable to load missions.",
+                            color = Color(0xFFFCA5A5),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
+                }
             }
 
             item {
@@ -200,20 +226,38 @@ fun AppStoreCard(mission: Mission) {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(mission.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, color = Color.White)
-            Text("By BetaMax Core", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text(
+                mission.packageId.ifBlank { "Independent program" },
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray,
+                maxLines = 1
+            )
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = Amber400, modifier = Modifier.size(12.dp))
-                Text(" 4.8", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                Text(
+                    mission.platform.ifBlank { "Unknown" },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White
+                )
                 Spacer(modifier = Modifier.weight(1f))
-                Text("${mission.rewardValue} CR", style = MaterialTheme.typography.labelSmall, color = Amber400, fontWeight = FontWeight.Bold)
+                val rewardLabel = if (mission.rewardType.equals("Paid", ignoreCase = true)) "USD" else "CR"
+                Text(
+                    "${mission.rewardValue} $rewardLabel",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Amber400,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
 }
 
 @Composable
-fun MissionControlStats() {
+fun MissionControlStats(
+    activeCount: Int,
+    credits: Int,
+    tier: Int
+) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text("MISSION CONTROL", style = MaterialTheme.typography.labelSmall, color = Cyan500, modifier = Modifier.padding(bottom = 8.dp))
         Row(
@@ -222,19 +266,19 @@ fun MissionControlStats() {
         ) {
             BetaMaxStatCard(
                 label = "Active",
-                value = "3",
+                value = activeCount.toString(),
                 color = Cyan400,
                 modifier = Modifier.weight(1f)
             )
             BetaMaxStatCard(
                 label = "Earned",
-                value = "4.5k",
+                value = credits.toString(),
                 color = Amber400,
                 modifier = Modifier.weight(1f)
             )
             BetaMaxStatCard(
                 label = "Rank",
-                value = "TP",
+                value = "T$tier",
                 color = Fuchsia500,
                 modifier = Modifier.weight(1f)
             )

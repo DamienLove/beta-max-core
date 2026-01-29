@@ -1,5 +1,7 @@
 {
-  "projects": {},
+  "projects": {
+    "default": "beta-max-core-portal-2026"
+  },
   "targets": {},
   "etags": {}
 }

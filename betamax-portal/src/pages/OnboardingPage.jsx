@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { Shield, Code, ChevronRight, Zap, Target, Star } from 'lucide-react';
-import TestEngine from '../components/TestEngine';
+import { Shield, Code, ChevronRight, Star } from 'lucide-react';
 
 export default function OnboardingPage() {
   const { user, setProfile } = useAuth();
@@ -11,7 +10,11 @@ export default function OnboardingPage() {
   const [role, setRole] = useState(null); // 'tester' | 'developer'
   
   // Tester specific state
-  const [testerSkill, setTesterSkill] = useState({});
+  const [testerSkill, setTesterSkill] = useState({
+    tier: 1,
+    spec: 'Mobile App Testing',
+    experience: 'Rookie'
+  });
   
   // Developer specific state
   const [devDetails, setDevDetails] = useState({ accountName: '', appCount: 1 });
@@ -74,56 +77,63 @@ export default function OnboardingPage() {
 
         {step === 2 && role === 'tester' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-             {!testerSkill.tier ? (
-               // Phase 1: The Test
-               <>
-                 <div className="flex items-center gap-4 mb-8">
-                   <Shield className="text-cyan-500" />
-                   <div>
-                     <h2 className="text-2xl font-bold text-white uppercase">Scout Qualification</h2>
-                     <p className="text-xs text-cyan-700">Calibrating your skill tier based on initial telemetry...</p>
-                   </div>
-                 </div>
-                 
-                 <TestEngine onComplete={(results) => setTesterSkill(prev => ({...prev, ...results}))} />
-               </>
-             ) : (
-               // Phase 2: Details & Confirm
-               <>
-                 <div className="text-center mb-8 animate-in zoom-in">
-                   <h2 className="text-3xl font-bold text-white">TIER {testerSkill.tier} ASSIGNED</h2>
-                   <p className="text-cyan-500 text-sm">Score: {testerSkill.score}/{testerSkill.total}</p>
-                 </div>
+            <div className="flex items-center gap-4 mb-8">
+              <Shield className="text-cyan-500" />
+              <div>
+                <h2 className="text-2xl font-bold text-white uppercase">Scout Profile</h2>
+                <p className="text-xs text-cyan-700">Tell us how you test so we can route you to the right ops.</p>
+              </div>
+            </div>
 
-                 <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-cyan-700 uppercase mb-2 block">Primary Specialization</label>
-                      <select className="w-full cyber-input text-xs" onChange={(e) => setTesterSkill(s => ({...s, spec: e.target.value}))}>
-                        <option>Mobile App Testing</option>
-                        <option>Game Mechanics</option>
-                        <option>UI/UX Fidelity</option>
-                        <option>Security Auditing</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-cyan-700 uppercase mb-2 block">Years of Experience</label>
-                      <select className="w-full cyber-input text-xs" onChange={(e) => setTesterSkill(s => ({...s, experience: e.target.value}))}>
-                        <option>None (Rookie)</option>
-                        <option>1-2 Years</option>
-                        <option>3-5 Years</option>
-                        <option>5+ Years</option>
-                      </select>
-                    </div>
-                 </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-cyan-700 uppercase mb-2 block">Scout Tier</label>
+                <select
+                  className="w-full cyber-input text-xs"
+                  value={testerSkill.tier}
+                  onChange={(e) => setTesterSkill(s => ({...s, tier: Number(e.target.value)}))}
+                >
+                  <option value={1}>Tier 1: Rookie</option>
+                  <option value={2}>Tier 2: Veteran</option>
+                  <option value={3}>Tier 3: Elite</option>
+                  <option value={4}>Tier 4: Specialist</option>
+                  <option value={5}>Tier 5: Vanguard</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-cyan-700 uppercase mb-2 block">Primary Specialization</label>
+                <select
+                  className="w-full cyber-input text-xs"
+                  value={testerSkill.spec}
+                  onChange={(e) => setTesterSkill(s => ({...s, spec: e.target.value}))}
+                >
+                  <option>Mobile App Testing</option>
+                  <option>Game Mechanics</option>
+                  <option>UI/UX Fidelity</option>
+                  <option>Security Auditing</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-cyan-700 uppercase mb-2 block">Years of Experience</label>
+                <select
+                  className="w-full cyber-input text-xs"
+                  value={testerSkill.experience}
+                  onChange={(e) => setTesterSkill(s => ({...s, experience: e.target.value}))}
+                >
+                  <option>None (Rookie)</option>
+                  <option>1-2 Years</option>
+                  <option>3-5 Years</option>
+                  <option>5+ Years</option>
+                </select>
+              </div>
+            </div>
 
-                 <button 
-                   onClick={() => completeOnboarding({ skillData: testerSkill })}
-                   className="cyber-button w-full mt-8 flex items-center justify-center gap-2"
-                 >
-                   Finalize Registration <ChevronRight size={18} />
-                 </button>
-               </>
-             )}
+            <button 
+              onClick={() => completeOnboarding({ skillData: testerSkill })}
+              className="cyber-button w-full mt-8 flex items-center justify-center gap-2"
+            >
+              Finalize Registration <ChevronRight size={18} />
+            </button>
           </div>
         )}
 

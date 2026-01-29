@@ -12,7 +12,20 @@
           "package_name": "com.betamax.core"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "400828648544-f84uokhvhdg3gpsem1k62s0uapikbme3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.betamax.core",
+            "certificate_hash": "52cb49e758c74c0f457edd6e520141c6aaafc3a4"
+          }
+        },
+        {
+          "client_id": "400828648544-sdaj1hjtutuqfmhmvjhlumcf9q6369ua.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBmDq-qtq7BRUlTS8Oy4gQfq73-vcH44-c"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "400828648544-sdaj1hjtutuqfmhmvjhlumcf9q6369ua.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
