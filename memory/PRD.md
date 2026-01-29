@@ -95,18 +95,19 @@ Build Betamax web portal for developers - a professional beta testing platform w
 - [ ] Achievement badges system
 - [ ] Social features (follow, chat)
 
-## API Keys Required
-- Firebase credentials (user to configure):
-  - VITE_FIREBASE_PROJECT_ID
-  - VITE_FIREBASE_APP_ID
-  - VITE_FIREBASE_STORAGE_BUCKET
-  - VITE_FIREBASE_API_KEY
-  - VITE_FIREBASE_AUTH_DOMAIN
-  - VITE_FIREBASE_MESSAGING_SENDER_ID
+## Firebase Configuration ✅ CONFIGURED
+- **Project ID:** beta-max-core-portal-2026
+- **Auth Domain:** beta-max-core-portal-2026.firebaseapp.com
+- **Storage Bucket:** beta-max-core-portal-2026.firebasestorage.app
 
-## Demo Credentials
-- **Scout:** neo@betamax.io (any password)
-- **Architect:** sarah@betamax.io (any password)
+Authentication Methods:
+- Email/Password registration
+- Google Sign-In
+
+## How to Create Test Users
+1. Go to the app and click "Register"
+2. Enter email, password, and name
+3. Or use "Continue with Google" for OAuth login
 
 ## File Structure
 ```
