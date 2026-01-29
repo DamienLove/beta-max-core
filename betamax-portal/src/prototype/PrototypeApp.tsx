@@ -216,6 +216,32 @@ const StatusBadge = React.memo(({ status, type = 'status' }: { status: string, t
 
 // --- AUTH SCREENS ---
 
+// Optimized: Static header extracted to prevent re-renders on form input
+const AuthHeader = React.memo(() => (
+    <>
+        <div className="flex justify-center mb-6">
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+                <Icon name="bug_report" className="text-white text-2xl" />
+            </div>
+        </div>
+
+        <h1 className="text-2xl font-bold text-white text-center mb-2">Beta Max</h1>
+        <p className="text-zinc-500 text-center text-sm mb-8">Professional Beta Testing Platform</p>
+    </>
+));
+
+// Optimized: Extracted footer to prevent re-renders on form input
+const AuthFooter = React.memo(({ isLogin, onToggle }: { isLogin: boolean, onToggle: () => void }) => (
+    <div className="mt-6 text-center">
+        <p className="text-zinc-500 text-xs">
+            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={onToggle} className="text-primary hover:underline font-bold">
+                {isLogin ? "Sign Up" : "Log In"}
+            </button>
+        </p>
+    </div>
+));
+
 const AuthScreen = () => {
     const { login } = useApp();
     const [isLogin, setIsLogin] = useState(true);
@@ -233,19 +259,15 @@ const AuthScreen = () => {
         }
     };
 
+    // Optimized: Stable handler to prevent AuthFooter re-renders
+    const toggleLogin = useCallback(() => setIsLogin(prev => !prev), []);
+
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_50%_120%,rgba(59,130,246,0.15),rgba(0,0,0,0))]"></div>
             
             <div className="w-full max-w-sm bg-surface/50 backdrop-blur-xl border border-white/5 rounded-2xl p-8 shadow-2xl relative z-10 animate-fade-in">
-                <div className="flex justify-center mb-6">
-                    <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                        <Icon name="bug_report" className="text-white text-2xl" />
-                    </div>
-                </div>
-                
-                <h1 className="text-2xl font-bold text-white text-center mb-2">Beta Max</h1>
-                <p className="text-zinc-500 text-center text-sm mb-8">Professional Beta Testing Platform</p>
+                <AuthHeader />
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     {error && (
@@ -305,14 +327,7 @@ const AuthScreen = () => {
                     </button>
                 </form>
 
-                <div className="mt-6 text-center">
-                    <p className="text-zinc-500 text-xs">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button onClick={() => setIsLogin(!isLogin)} className="text-primary hover:underline font-bold">
-                            {isLogin ? "Sign Up" : "Log In"}
-                        </button>
-                    </p>
-                </div>
+                <AuthFooter isLogin={isLogin} onToggle={toggleLogin} />
             </div>
         </div>
     );
