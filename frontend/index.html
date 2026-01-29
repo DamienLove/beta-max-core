@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐛</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BETA MAX // The Deck</title>
+    <meta name="description" content="Professional QA platform for beta testing. Hunt bugs, earn rewards." />
+    <meta name="theme-color" content="#030712" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700;800&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <style>
+      /* Preloader styles */
+      .preloader {
+        position: fixed;
+        inset: 0;
+        background: #030712;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      .preloader.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .preloader-content {
+        text-align: center;
+      }
+      .preloader-logo {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #06b6d4, #e879f9);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        animation: pulse-loader 2s ease-in-out infinite;
+      }
+      .preloader-logo svg {
+        width: 40px;
+        height: 40px;
+        fill: white;
+      }
+      .preloader-text {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 24px;
+        font-weight: 800;
+        letter-spacing: 0.2em;
+      }
+      .preloader-text span:first-child { color: #e879f9; }
+      .preloader-text span:last-child { color: #06b6d4; }
+      .preloader-bar {
+        width: 200px;
+        height: 4px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 2px;
+        margin: 20px auto 0;
+        overflow: hidden;
+      }
+      .preloader-bar-inner {
+        height: 100%;
+        background: linear-gradient(90deg, #06b6d4, #e879f9);
+        animation: loading 1.5s ease-in-out infinite;
+      }
+      @keyframes pulse-loader {
+        0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(232, 121, 249, 0.8); }
+      }
+      @keyframes loading {
+        0% { width: 0%; margin-left: 0; }
+        50% { width: 100%; margin-left: 0; }
+        100% { width: 0%; margin-left: 100%; }
+      }
+    </style>
+  </head>
+  <body class="bg-background text-white antialiased">
+    <!-- Preloader -->
+    <div class="preloader" id="preloader">
+      <div class="preloader-content">
+        <div class="preloader-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="preloader-text">
+          <span>BETA</span><span>MAX</span>
+        </div>
+        <div class="preloader-bar">
+          <div class="preloader-bar-inner"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Hide preloader when app is ready
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const preloader = document.getElementById('preloader');
+          if (preloader) {
+            preloader.classList.add('fade-out');
+            setTimeout(() => preloader.remove(), 500);
+          }
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
