@@ -4,6 +4,7 @@ export interface User {
     email: string;
     role: 'tester' | 'admin' | 'developer';
     avatar: string;
+    passwordHash?: string; // SHA-256 hash of the password
     stats: UserStats;
 }
 
