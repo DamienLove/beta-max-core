@@ -5,10 +5,34 @@ import {
   Bug, Trophy, Zap, Terminal as TerminalIcon, User, LogOut, Plus, ChevronRight, 
   Search, Globe, Gamepad2, Home, Target, Send, ArrowLeft, Eye, Clock, Star,
   Sparkles, Shield, Award, TrendingUp, Activity, AlertTriangle, Check, X,
-  Play, Pause, RotateCcw, Volume2, VolumeX
+  Play, Pause, RotateCcw, Volume2, VolumeX, Mail
 } from 'lucide-react';
 
-// ============== MOCK DATA ==============
+// Firebase imports
+import { auth, db, googleProvider, isDemoMode } from './firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  addDoc,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
+  serverTimestamp,
+  increment
+} from 'firebase/firestore';
+
+// ============== MOCK DATA (for demo mode) ==============
 
 const MOCK_USERS = [
   {
@@ -140,79 +164,311 @@ const AppContext = createContext(undefined);
 
 const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [projects, setProjects] = useState(INITIAL_PROJECTS);
   const [externalBetas, setExternalBetas] = useState(EXTERNAL_BETAS);
   const [anomalies, setAnomalies] = useState(INITIAL_ANOMALIES);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState('');
+
+  // Listen to auth state changes
+  useEffect(() => {
+    if (isDemoMode) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        // Fetch or create user profile
+        const userRef = doc(db, 'users', firebaseUser.uid);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          setProfile({ id: firebaseUser.uid, ...userSnap.data() });
+        } else {
+          // Create new profile
+          const newProfile = {
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Scout',
+            email: firebaseUser.email,
+            role: 'scout',
+            avatar: firebaseUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${firebaseUser.uid}`,
+            stats: { vectorPoints: 100, rank: 'Rookie', bugsSubmitted: 0, accuracy: 0, gamesWon: 0 },
+            tier: 'bronze',
+            createdAt: serverTimestamp()
+          };
+          await setDoc(userRef, newProfile);
+          setProfile({ id: firebaseUser.uid, ...newProfile });
+        }
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to Firestore collections (when not in demo mode)
+  useEffect(() => {
+    if (isDemoMode || !user) return;
+
+    // Listen to anomalies
+    const anomaliesQuery = query(
+      collection(db, 'anomalies'),
+      orderBy('timestamp', 'desc')
+    );
+    
+    const unsubAnomalies = onSnapshot(anomaliesQuery, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (data.length > 0) {
+        setAnomalies(data);
+      }
+    }, (error) => {
+      console.error('Anomalies listener error:', error);
+    });
+
+    // Listen to external betas
+    const betasQuery = query(collection(db, 'external_betas'));
+    const unsubBetas = onSnapshot(betasQuery, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      if (data.length > 0) {
+        setExternalBetas(data);
+      }
+    }, (error) => {
+      console.error('External betas listener error:', error);
+    });
+
+    return () => {
+      unsubAnomalies();
+      unsubBetas();
+    };
+  }, [user]);
 
   const playSound = useCallback((type) => {
     if (!soundEnabled) return;
-    // Sound effects would be played here
   }, [soundEnabled]);
 
-  const login = useCallback((email, password) => {
+  // Demo mode login
+  const demoLogin = useCallback((email) => {
     const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (found) {
-      setUser(found);
-      playSound('login');
+      setProfile(found);
+      setUser({ uid: found.id, email: found.email });
       return { success: true };
     }
     return { success: false, error: "Access denied. Invalid credentials." };
-  }, [playSound]);
+  }, []);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    playSound('logout');
-  }, [playSound]);
+  // Firebase Auth login
+  const login = useCallback(async (email, password) => {
+    if (isDemoMode) {
+      return demoLogin(email);
+    }
 
-  const addAnomaly = useCallback((item) => {
-    if (!user) return;
+    try {
+      setAuthError('');
+      await signInWithEmailAndPassword(auth, email, password);
+      return { success: true };
+    } catch (error) {
+      const message = error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password'
+        ? 'Invalid credentials. Access denied.'
+        : error.code === 'auth/too-many-requests'
+        ? 'Too many attempts. Please try again later.'
+        : error.message;
+      setAuthError(message);
+      return { success: false, error: message };
+    }
+  }, [demoLogin]);
+
+  // Firebase Auth register
+  const register = useCallback(async (email, password, name) => {
+    if (isDemoMode) {
+      return { success: false, error: "Registration disabled in demo mode." };
+    }
+
+    try {
+      setAuthError('');
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // Profile will be created by onAuthStateChanged
+      return { success: true };
+    } catch (error) {
+      const message = error.code === 'auth/email-already-in-use'
+        ? 'Email already registered.'
+        : error.code === 'auth/weak-password'
+        ? 'Password must be at least 6 characters.'
+        : error.message;
+      setAuthError(message);
+      return { success: false, error: message };
+    }
+  }, []);
+
+  // Google Sign In
+  const googleLogin = useCallback(async () => {
+    if (isDemoMode) {
+      return demoLogin('neo@betamax.io');
+    }
+
+    try {
+      setAuthError('');
+      await signInWithPopup(auth, googleProvider);
+      return { success: true };
+    } catch (error) {
+      setAuthError(error.message);
+      return { success: false, error: error.message };
+    }
+  }, [demoLogin]);
+
+  const logout = useCallback(async () => {
+    if (isDemoMode) {
+      setUser(null);
+      setProfile(null);
+      return;
+    }
+    
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  }, []);
+
+  const addAnomaly = useCallback(async (item) => {
+    if (!profile) return;
+    
     const points = item.severity === 'Critical' ? 150 : item.severity === 'High' ? 100 : item.severity === 'Medium' ? 50 : 25;
+    
     const newItem = {
       ...item,
-      id: `a-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      reporterId: user.id,
-      reporterName: user.name,
+      timestamp: isDemoMode ? new Date().toISOString() : serverTimestamp(),
+      reporterId: profile.id,
+      reporterName: profile.name,
       status: 'Open',
       pointsAwarded: points
     };
-    setAnomalies(prev => [newItem, ...prev]);
-    // Update user points
-    setUser(prev => prev ? {
-      ...prev,
-      stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints + points, bugsSubmitted: prev.stats.bugsSubmitted + 1 }
-    } : null);
-    playSound('submit');
-    return newItem;
-  }, [user, playSound]);
 
-  const addExternalBeta = useCallback((beta) => {
-    if (!user) return;
+    if (isDemoMode) {
+      const localItem = { ...newItem, id: `a-${Date.now()}`, timestamp: new Date().toISOString() };
+      setAnomalies(prev => [localItem, ...prev]);
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints + points, bugsSubmitted: prev.stats.bugsSubmitted + 1 }
+      } : null);
+      return localItem;
+    }
+
+    try {
+      // Add to Firestore
+      const docRef = await addDoc(collection(db, 'anomalies'), newItem);
+      
+      // Update user points
+      const userRef = doc(db, 'users', profile.id);
+      await updateDoc(userRef, {
+        'stats.vectorPoints': increment(points),
+        'stats.bugsSubmitted': increment(1)
+      });
+      
+      // Update local profile
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints + points, bugsSubmitted: prev.stats.bugsSubmitted + 1 }
+      } : null);
+      
+      return { id: docRef.id, ...newItem };
+    } catch (error) {
+      console.error('Error adding anomaly:', error);
+      return null;
+    }
+  }, [profile]);
+
+  const addExternalBeta = useCallback(async (beta) => {
+    if (!profile) return;
+
     const newBeta = {
       ...beta,
-      id: `ext-${Date.now()}`,
-      addedBy: user.id,
-      votes: 0
+      addedBy: profile.id,
+      addedByName: profile.name,
+      votes: 0,
+      createdAt: isDemoMode ? new Date().toISOString() : serverTimestamp()
     };
-    setExternalBetas(prev => [newBeta, ...prev]);
-    playSound('add');
-    return newBeta;
-  }, [user, playSound]);
 
-  const spendPoints = useCallback((amount) => {
-    if (!user || user.stats.vectorPoints < amount) return false;
-    setUser(prev => prev ? {
-      ...prev,
-      stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints - amount }
-    } : null);
-    return true;
-  }, [user]);
+    if (isDemoMode) {
+      const localBeta = { ...newBeta, id: `ext-${Date.now()}` };
+      setExternalBetas(prev => [localBeta, ...prev]);
+      return localBeta;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, 'external_betas'), newBeta);
+      return { id: docRef.id, ...newBeta };
+    } catch (error) {
+      console.error('Error adding external beta:', error);
+      return null;
+    }
+  }, [profile]);
+
+  const spendPoints = useCallback(async (amount) => {
+    if (!profile || profile.stats.vectorPoints < amount) return false;
+    
+    if (isDemoMode) {
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints - amount }
+      } : null);
+      return true;
+    }
+
+    try {
+      const userRef = doc(db, 'users', profile.id);
+      await updateDoc(userRef, {
+        'stats.vectorPoints': increment(-amount)
+      });
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints - amount }
+      } : null);
+      return true;
+    } catch (error) {
+      console.error('Error spending points:', error);
+      return false;
+    }
+  }, [profile]);
+
+  const addWinPoints = useCallback(async (amount) => {
+    if (!profile) return;
+    
+    if (isDemoMode) {
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints + amount, gamesWon: prev.stats.gamesWon + 1 }
+      } : null);
+      return;
+    }
+
+    try {
+      const userRef = doc(db, 'users', profile.id);
+      await updateDoc(userRef, {
+        'stats.vectorPoints': increment(amount),
+        'stats.gamesWon': increment(1)
+      });
+      setProfile(prev => prev ? {
+        ...prev,
+        stats: { ...prev.stats, vectorPoints: prev.stats.vectorPoints + amount, gamesWon: prev.stats.gamesWon + 1 }
+      } : null);
+    } catch (error) {
+      console.error('Error adding win points:', error);
+    }
+  }, [profile]);
 
   const value = useMemo(() => ({
-    user, login, logout, projects, externalBetas, anomalies, 
-    addAnomaly, addExternalBeta, spendPoints, soundEnabled, setSoundEnabled
-  }), [user, login, logout, projects, externalBetas, anomalies, addAnomaly, addExternalBeta, spendPoints, soundEnabled]);
+    user, profile, login, register, googleLogin, logout, projects, externalBetas, anomalies, 
+    addAnomaly, addExternalBeta, spendPoints, addWinPoints, soundEnabled, setSoundEnabled,
+    loading, authError, setAuthError, isDemoMode
+  }), [user, profile, login, register, googleLogin, logout, projects, externalBetas, anomalies, 
+      addAnomaly, addExternalBeta, spendPoints, addWinPoints, soundEnabled, loading, authError]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
@@ -228,21 +484,6 @@ const useApp = () => {
 const Icon = React.memo(({ name, className = "" }) => (
   <span className={`material-symbols-outlined select-none ${className}`} aria-hidden="true">{name}</span>
 ));
-
-const GlitchText = ({ children, className = "" }) => (
-  <span className={`relative inline-block animate-glitch ${className}`}>
-    {children}
-  </span>
-);
-
-const CyberBorder = ({ children, className = "", color = "cyan" }) => (
-  <div className={`relative ${className}`}>
-    <div className={`absolute -inset-px bg-gradient-to-r ${color === 'cyan' ? 'from-cyan-500/50 to-cyan-500/0' : 'from-fuchsia-500/50 to-fuchsia-500/0'} blur-sm`} />
-    <div className="relative bg-surface/90 backdrop-blur-xl border border-white/10 rounded-lg overflow-hidden">
-      {children}
-    </div>
-  </div>
-);
 
 const StatCard = ({ icon: IconComp, label, value, color = "cyan", trend }) => (
   <motion.div 
@@ -288,24 +529,29 @@ const StatusBadge = ({ status }) => {
 // ============== AUTH SCREEN ==============
 
 const AuthScreen = () => {
-  const { login } = useApp();
+  const { login, register, googleLogin, authError, setAuthError, isDemoMode } = useApp();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setAuthError('');
     setLoading(true);
     
-    await new Promise(r => setTimeout(r, 800)); // Simulate network
-    const result = login(email, password);
-    
-    if (!result.success) {
-      setError(result.error);
+    if (isLogin) {
+      await login(email, password);
+    } else {
+      await register(email, password, name);
     }
+    setLoading(false);
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    await googleLogin();
     setLoading(false);
   };
 
@@ -366,11 +612,14 @@ const AuthScreen = () => {
             <span className="text-cyan-400">MAX</span>
           </h1>
           <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] mt-2">System Access Protocol</p>
+          {isDemoMode && (
+            <span className="mt-2 px-2 py-1 bg-amber-500/20 text-amber-400 text-[10px] rounded uppercase">Demo Mode</span>
+          )}
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-5" data-testid="login-form">
           <AnimatePresence mode="wait">
-            {error && (
+            {authError && (
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -378,10 +627,26 @@ const AuthScreen = () => {
                 className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 flex items-center gap-2"
               >
                 <AlertTriangle className="w-4 h-4 text-red-400" />
-                <p className="text-red-400 text-xs font-mono">{error}</p>
+                <p className="text-red-400 text-xs font-mono">{authError}</p>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {!isLogin && (
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Handle_Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="cyber-input w-full"
+                placeholder="Neo_Runner"
+                data-testid="name-input"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
@@ -434,13 +699,53 @@ const AuthScreen = () => {
               </>
             )}
           </motion.button>
+
+          {!isDemoMode && (
+            <>
+              <div className="relative flex items-center gap-4 my-6">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[10px] text-slate-500 uppercase">Or</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              <motion.button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                data-testid="google-login-btn"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span className="text-sm text-slate-300">Continue with Google</span>
+              </motion.button>
+            </>
+          )}
         </form>
 
-        <div className="mt-6 pt-6 border-t border-white/5 text-center">
-          <p className="text-xs text-slate-500">
-            Demo: <span className="text-cyan-400 font-mono">neo@betamax.io</span> or <span className="text-fuchsia-400 font-mono">sarah@betamax.io</span>
-          </p>
+        <div className="mt-6 text-center">
+          <button 
+            onClick={() => { setIsLogin(!isLogin); setAuthError(''); }}
+            className="text-xs text-slate-500 hover:text-cyan-400 transition-colors"
+          >
+            {isLogin ? "Need access? " : "Already have access? "}
+            <span className="text-cyan-400 font-bold">{isLogin ? "Register" : "Login"}</span>
+          </button>
         </div>
+
+        {isDemoMode && (
+          <div className="mt-6 pt-6 border-t border-white/5 text-center">
+            <p className="text-xs text-slate-500">
+              Demo: <span className="text-cyan-400 font-mono">neo@betamax.io</span> or <span className="text-fuchsia-400 font-mono">sarah@betamax.io</span>
+            </p>
+          </div>
+        )}
       </motion.div>
     </div>
   );
@@ -450,7 +755,7 @@ const AuthScreen = () => {
 
 const Sidebar = ({ currentView }) => {
   const navigate = useNavigate();
-  const { user, logout, soundEnabled, setSoundEnabled } = useApp();
+  const { profile, logout, soundEnabled, setSoundEnabled, isDemoMode } = useApp();
 
   const navItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
@@ -477,7 +782,9 @@ const Sidebar = ({ currentView }) => {
               <span className="text-fuchsia-400">BETA</span>
               <span className="text-cyan-400">MAX</span>
             </h1>
-            <p className="text-[8px] text-slate-500 uppercase tracking-widest">v3.0.0</p>
+            <p className="text-[8px] text-slate-500 uppercase tracking-widest">
+              v3.0.0 {isDemoMode && '• Demo'}
+            </p>
           </div>
         </Link>
       </div>
@@ -517,18 +824,18 @@ const Sidebar = ({ currentView }) => {
         <div className="cyber-panel rounded-xl p-4">
           <div className="flex items-center gap-3 mb-3">
             <img 
-              src={user?.avatar} 
-              alt={user?.name}
+              src={profile?.avatar} 
+              alt={profile?.name}
               className="w-10 h-10 rounded-lg object-cover border border-cyan-500/30"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{user?.name}</p>
-              <p className="text-[10px] text-cyan-400 font-mono">{user?.stats.rank}</p>
+              <p className="text-sm font-bold text-white truncate">{profile?.name}</p>
+              <p className="text-[10px] text-cyan-400 font-mono">{profile?.stats?.rank}</p>
             </div>
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-slate-500">Vector Points</span>
-            <span className="text-amber-400 font-bold font-mono">{user?.stats.vectorPoints.toLocaleString()}</span>
+            <span className="text-amber-400 font-bold font-mono">{profile?.stats?.vectorPoints?.toLocaleString()}</span>
           </div>
         </div>
         
@@ -559,9 +866,9 @@ const Sidebar = ({ currentView }) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, projects, anomalies } = useApp();
+  const { profile, projects, anomalies } = useApp();
   
-  const myAnomalies = useMemo(() => anomalies.filter(a => a.reporterId === user?.id), [anomalies, user?.id]);
+  const myAnomalies = useMemo(() => anomalies.filter(a => a.reporterId === profile?.id), [anomalies, profile?.id]);
   const recentProjects = useMemo(() => projects.slice(0, 3), [projects]);
 
   return (
@@ -577,7 +884,7 @@ const Dashboard = () => {
             THE_DECK
           </h1>
           <p className="text-sm text-slate-500">
-            Welcome back, <span className="text-cyan-400">{user?.name}</span>
+            Welcome back, <span className="text-cyan-400">{profile?.name}</span>
           </p>
         </div>
         <motion.button
@@ -599,10 +906,10 @@ const Dashboard = () => {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
       >
-        <StatCard icon={Zap} label="Vector_Points" value={user?.stats.vectorPoints || 0} color="amber" trend={12} />
+        <StatCard icon={Zap} label="Vector_Points" value={profile?.stats?.vectorPoints || 0} color="amber" trend={12} />
         <StatCard icon={Bug} label="Anomalies_Logged" value={myAnomalies.length} color="fuchsia" trend={8} />
-        <StatCard icon={Trophy} label="Accuracy_Rate" value={`${user?.stats.accuracy || 0}%`} color="cyan" />
-        <StatCard icon={Gamepad2} label="Games_Won" value={user?.stats.gamesWon || 0} color="fuchsia" />
+        <StatCard icon={Trophy} label="Accuracy_Rate" value={`${profile?.stats?.accuracy || 0}%`} color="cyan" />
+        <StatCard icon={Gamepad2} label="Games_Won" value={profile?.stats?.gamesWon || 0} color="fuchsia" />
       </motion.div>
 
       {/* Active Missions */}
@@ -994,7 +1301,6 @@ const MissionDetail = () => {
                         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
                           <span>by {a.reporterName}</span>
                           <span>v{a.version}</span>
-                          <span>{new Date(a.timestamp).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -1031,9 +1337,8 @@ const ReportAnomaly = () => {
     if (!isValid || !project) return;
 
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 1000));
 
-    addAnomaly({
+    await addAnomaly({
       type: 'Bug',
       title,
       description,
@@ -1183,14 +1488,14 @@ const ReportAnomaly = () => {
 // ============== EXTERNAL BETAS ==============
 
 const ExternalBetasPage = () => {
-  const { externalBetas, addExternalBeta, user } = useApp();
+  const { externalBetas, addExternalBeta, profile } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [newBeta, setNewBeta] = useState({ name: '', platform: '', url: '', description: '' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (newBeta.name && newBeta.url) {
-      addExternalBeta(newBeta);
+      await addExternalBeta(newBeta);
       setNewBeta({ name: '', platform: '', url: '', description: '' });
       setShowForm(false);
     }
@@ -1299,9 +1604,10 @@ const ExternalBetasPage = () => {
 // ============== TERMINAL ==============
 
 const TerminalPage = () => {
-  const { user, projects, anomalies } = useApp();
+  const { profile, projects, anomalies, isDemoMode } = useApp();
   const [history, setHistory] = useState([
     { type: 'system', text: 'BETA MAX TERMINAL v3.0.0' },
+    { type: 'system', text: `Mode: ${isDemoMode ? 'DEMO' : 'PRODUCTION'}` },
     { type: 'system', text: 'Type "help" for available commands.' },
     { type: 'system', text: '─────────────────────────────────────' }
   ]);
@@ -1325,9 +1631,10 @@ const TerminalPage = () => {
     ],
     status: () => [
       '┌─ SYSTEM STATUS ──────────────────────',
-      `│ User: ${user?.name}`,
-      `│ Role: ${user?.role}`,
-      `│ Tier: ${user?.tier}`,
+      `│ User: ${profile?.name}`,
+      `│ Role: ${profile?.role}`,
+      `│ Tier: ${profile?.tier}`,
+      `│ Mode: ${isDemoMode ? 'DEMO' : 'PRODUCTION (Firebase)'}`,
       '│ Connection: SECURE',
       '│ Uptime: 99.97%',
       '└───────────────────────────────────────'
@@ -1339,15 +1646,15 @@ const TerminalPage = () => {
     ],
     stats: () => [
       '┌─ YOUR STATISTICS ─────────────────────',
-      `│ Vector Points: ${user?.stats.vectorPoints}`,
-      `│ Rank: ${user?.stats.rank}`,
-      `│ Bugs Submitted: ${user?.stats.bugsSubmitted}`,
-      `│ Accuracy: ${user?.stats.accuracy}%`,
-      `│ Games Won: ${user?.stats.gamesWon}`,
+      `│ Vector Points: ${profile?.stats?.vectorPoints}`,
+      `│ Rank: ${profile?.stats?.rank}`,
+      `│ Bugs Submitted: ${profile?.stats?.bugsSubmitted}`,
+      `│ Accuracy: ${profile?.stats?.accuracy}%`,
+      `│ Games Won: ${profile?.stats?.gamesWon}`,
       '└───────────────────────────────────────'
     ],
     anomalies: () => {
-      const userAnomalies = anomalies.filter(a => a.reporterId === user?.id);
+      const userAnomalies = anomalies.filter(a => a.reporterId === profile?.id);
       if (userAnomalies.length === 0) return ['No anomalies found.'];
       return [
         '┌─ YOUR ANOMALIES ──────────────────────',
@@ -1355,7 +1662,7 @@ const TerminalPage = () => {
         `└─ Total: ${userAnomalies.length} anomalies`
       ];
     },
-    whoami: () => [`${user?.name} <${user?.email}> [${user?.role}]`],
+    whoami: () => [`${profile?.name} <${profile?.email || 'N/A'}> [${profile?.role}]`],
     clear: () => 'CLEAR',
     ascii: () => [
       '    ██████╗ ███████╗████████╗ █████╗ ',
@@ -1465,8 +1772,8 @@ const TerminalPage = () => {
 // ============== ARCADE (POINTS GAME) ==============
 
 const ArcadePage = () => {
-  const { user, spendPoints } = useApp();
-  const [gameState, setGameState] = useState('idle'); // idle, playing, won, lost
+  const { profile, spendPoints, addWinPoints } = useApp();
+  const [gameState, setGameState] = useState('idle');
   const [targetNumber, setTargetNumber] = useState(0);
   const [guess, setGuess] = useState('');
   const [attempts, setAttempts] = useState(0);
@@ -1477,13 +1784,14 @@ const ArcadePage = () => {
   const WIN_REWARD = 200;
   const MAX_ATTEMPTS = 5;
 
-  const startGame = () => {
-    if (user.stats.vectorPoints < ENTRY_COST) {
+  const startGame = async () => {
+    if (profile.stats.vectorPoints < ENTRY_COST) {
       setHint('Insufficient Vector Points!');
       return;
     }
     
-    if (spendPoints(ENTRY_COST)) {
+    const success = await spendPoints(ENTRY_COST);
+    if (success) {
       setTargetNumber(Math.floor(Math.random() * 100) + 1);
       setGameState('playing');
       setAttempts(0);
@@ -1492,7 +1800,7 @@ const ArcadePage = () => {
     }
   };
 
-  const makeGuess = () => {
+  const makeGuess = async () => {
     const num = parseInt(guess);
     if (isNaN(num) || num < 1 || num > 100) {
       setHint('Enter a valid number (1-100)');
@@ -1505,6 +1813,7 @@ const ArcadePage = () => {
     if (num === targetNumber) {
       setGameState('won');
       setHint(`You won ${WIN_REWARD} Vector Points!`);
+      await addWinPoints(WIN_REWARD);
       if (newAttempts < highScore) setHighScore(newAttempts);
     } else if (newAttempts >= MAX_ATTEMPTS) {
       setGameState('lost');
@@ -1524,7 +1833,7 @@ const ArcadePage = () => {
         </div>
         <div className="text-right">
           <p className="text-xs text-slate-500">Your Balance</p>
-          <p className="text-2xl font-bold text-amber-400 font-mono">{user?.stats.vectorPoints} VP</p>
+          <p className="text-2xl font-bold text-amber-400 font-mono">{profile?.stats?.vectorPoints} VP</p>
         </div>
       </div>
 
@@ -1654,7 +1963,7 @@ const ArcadePage = () => {
                 key={player.rank}
                 whileHover={{ x: 4 }}
                 className={`flex items-center gap-4 p-3 rounded-lg ${
-                  player.name === user?.name ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'
+                  player.name === profile?.name ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'
                 }`}
               >
                 <span className="text-lg w-8 text-center">{player.badge || player.rank}</span>
@@ -1668,7 +1977,7 @@ const ArcadePage = () => {
             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Your Arcade Stats</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center">
-                <p className="text-2xl font-bold text-fuchsia-400">{user?.stats.gamesWon}</p>
+                <p className="text-2xl font-bold text-fuchsia-400">{profile?.stats?.gamesWon}</p>
                 <p className="text-xs text-slate-500">Games Won</p>
               </div>
               <div className="text-center">
@@ -1699,13 +2008,29 @@ const MainLayout = ({ children, currentView }) => {
   );
 };
 
+// ============== LOADING SCREEN ==============
+
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <motion.div
+      animate={{ rotate: 360 }}
+      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+      className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full"
+    />
+  </div>
+);
+
 // ============== APP ROUTER ==============
 
 const AppContent = () => {
-  const { user } = useApp();
+  const { user, profile, loading } = useApp();
   const location = useLocation();
 
-  if (!user) {
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  if (!user || !profile) {
     return <AuthScreen />;
   }
 
