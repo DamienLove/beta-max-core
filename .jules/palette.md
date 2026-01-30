@@ -21,3 +21,7 @@
 ## 2026-02-14 - Layout Occlusion by Floating Elements
 **Learning:** Fixed bottom navigation elements and FABs can easily obscure the last item in a scrollable list, rendering actions (like buttons in empty states) inaccessible. Standard padding (e.g., `pb-24`) may be insufficient when stacking multiple fixed elements.
 **Action:** When designing near the bottom edge of a viewport with floating overlays, always verify the bottom padding allows for over-scrolling so the last interactive element clears all overlays. Increased container padding to `pb-32` resolved this.
+
+## 2026-01-30 - Prototype vs Production Code Mismatch
+**Learning:** The file `PrototypeApp.tsx` appeared to be the main app, but `App.jsx` was the actual entry point mounted in `main.jsx`.
+**Action:** Trace the component tree from the entry point (`main.jsx`) before assuming a file is active.
