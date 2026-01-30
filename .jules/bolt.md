@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-10-24 - Animated Background Re-renders
+**Learning:** Heavy animated backgrounds (using `framer-motion` or arrays of divs) inside a form component get re-evaluated on every keystroke, significantly increasing CPU usage during typing.
+**Action:** Extract animated backgrounds to a separate `React.memo` component that sits alongside the form, not inside it.
