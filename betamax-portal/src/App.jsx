@@ -287,6 +287,67 @@ const StatusBadge = ({ status }) => {
 
 // ============== AUTH SCREEN ==============
 
+const AuthBackground = React.memo(() => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(20)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
+        style={{
+          left: `${Math.random() * 100}%`,
+          height: `${100 + Math.random() * 200}px`,
+        }}
+        animate={{
+          y: ['-100%', '100vh'],
+          opacity: [0, 1, 0]
+        }}
+        transition={{
+          duration: 3 + Math.random() * 4,
+          repeat: Infinity,
+          delay: Math.random() * 5,
+          ease: "linear"
+        }}
+      />
+    ))}
+  </div>
+));
+
+const AuthHeader = React.memo(() => {
+  return (
+    <motion.div
+      className="flex flex-col items-center mb-8"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+    >
+      <div className="relative mb-4">
+        <motion.div
+          className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-fuchsia-500 rounded-xl flex items-center justify-center"
+          animate={{
+            boxShadow: ['0 0 20px rgba(6, 182, 212, 0.5)', '0 0 40px rgba(232, 121, 249, 0.5)', '0 0 20px rgba(6, 182, 212, 0.5)']
+          }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Bug className="w-8 h-8 text-white" />
+        </motion.div>
+      </div>
+      <h1 className="text-3xl font-display font-black tracking-wider">
+        <span className="text-fuchsia-400">BETA</span>
+        <span className="text-cyan-400">MAX</span>
+      </h1>
+      <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] mt-2">System Access Protocol</p>
+    </motion.div>
+  );
+});
+
+const AuthFooter = React.memo(() => (
+  <div className="mt-6 pt-6 border-t border-white/5 text-center">
+    <p className="text-xs text-slate-500">
+      Demo: <span className="text-cyan-400 font-mono">neo@betamax.io</span> or <span className="text-fuchsia-400 font-mono">sarah@betamax.io</span>
+    </p>
+  </div>
+));
+
 const AuthScreen = () => {
   const { login } = useApp();
   const [isLogin, setIsLogin] = useState(true);
@@ -313,29 +374,7 @@ const AuthScreen = () => {
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden grid-bg">
       <div className="crt-overlay" />
       
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
-            style={{
-              left: `${Math.random() * 100}%`,
-              height: `${100 + Math.random() * 200}px`,
-            }}
-            animate={{
-              y: ['-100%', '100vh'],
-              opacity: [0, 1, 0]
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear"
-            }}
-          />
-        ))}
-      </div>
+      <AuthBackground />
 
       <motion.div 
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -344,29 +383,7 @@ const AuthScreen = () => {
         className="w-full max-w-md cyber-panel rounded-2xl p-8 relative z-10"
       >
         {/* Logo */}
-        <motion.div 
-          className="flex flex-col items-center mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="relative mb-4">
-            <motion.div 
-              className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-fuchsia-500 rounded-xl flex items-center justify-center"
-              animate={{ 
-                boxShadow: ['0 0 20px rgba(6, 182, 212, 0.5)', '0 0 40px rgba(232, 121, 249, 0.5)', '0 0 20px rgba(6, 182, 212, 0.5)']
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <Bug className="w-8 h-8 text-white" />
-            </motion.div>
-          </div>
-          <h1 className="text-3xl font-display font-black tracking-wider">
-            <span className="text-fuchsia-400">BETA</span>
-            <span className="text-cyan-400">MAX</span>
-          </h1>
-          <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] mt-2">System Access Protocol</p>
-        </motion.div>
+        <AuthHeader />
 
         <form onSubmit={handleSubmit} className="space-y-5" data-testid="login-form">
           <AnimatePresence mode="wait">
@@ -436,11 +453,7 @@ const AuthScreen = () => {
           </motion.button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-white/5 text-center">
-          <p className="text-xs text-slate-500">
-            Demo: <span className="text-cyan-400 font-mono">neo@betamax.io</span> or <span className="text-fuchsia-400 font-mono">sarah@betamax.io</span>
-          </p>
-        </div>
+        <AuthFooter />
       </motion.div>
     </div>
   );
