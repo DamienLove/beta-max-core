@@ -5,7 +5,7 @@ import {
   Bug, Trophy, Zap, Terminal as TerminalIcon, User, LogOut, Plus, ChevronRight, 
   Search, Globe, Gamepad2, Home, Target, Send, ArrowLeft, Eye, Clock, Star,
   Sparkles, Shield, Award, TrendingUp, Activity, AlertTriangle, Check, X,
-  Play, Pause, RotateCcw, Volume2, VolumeX
+  Play, Pause, RotateCcw, Volume2, VolumeX, Copy
 } from 'lucide-react';
 
 // ============== MOCK DATA ==============
@@ -826,6 +826,18 @@ const MissionDetail = () => {
 
   const currentVersion = project.versions.find(v => v.isCurrent);
 
+  const [copied, setCopied] = useState(false);
+  const handleCopyVersion = () => {
+    if (currentVersion?.version) {
+      navigator.clipboard.writeText(currentVersion.version)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(console.error);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -847,7 +859,14 @@ const MissionDetail = () => {
           </div>
           <h1 className="text-4xl font-display font-black text-white mb-2">{project.name}</h1>
           <p className="text-slate-400 flex items-center gap-4">
-            <span className="text-cyan-400 font-mono">v{currentVersion?.version}</span>
+            <button
+                onClick={handleCopyVersion}
+                className="text-cyan-400 font-mono hover:text-white transition-colors flex items-center gap-2 group cursor-pointer focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none rounded px-1 -ml-1"
+                aria-label={`Copy version ${currentVersion?.version}`}
+            >
+                <span aria-hidden="true">v{currentVersion?.version}</span>
+                {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />}
+            </button>
             <span>{project.platform}</span>
           </p>
         </div>

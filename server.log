@@ -1,0 +1,14 @@
+
+> beta-max@0.0.0 dev /app/betamax-portal
+> vite
+
+
+  ROLLDOWN-VITE v7.2.5  ready in 371 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://192.168.0.2:3000/
+3:24:35 PM [vite] (client) hmr update /src/index.css
+3:25:15 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+3:25:27 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+3:26:07 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
+3:30:51 PM [vite] (client) hmr update /src/App.jsx, /src/index.css
