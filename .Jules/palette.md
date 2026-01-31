@@ -1,0 +1,3 @@
+## 2024-05-22 - Missing ARIA labels on interactive elements
+**Learning:** Several key interactive elements (icon-only buttons, navigation links acting as buttons) lacked ARIA labels or state indicators (`aria-current`). This is a common pattern when using animation libraries like `framer-motion` where semantic HTML elements might be overlooked in favor of animated components.
+**Action:** When auditing React apps using `framer-motion` or similar libraries, explicitly check that `motion.button` and similar components carry necessary ARIA attributes, especially when they are icon-only or represent navigation state.
