@@ -10,6 +10,13 @@ import {
 
 // ============== MOCK DATA ==============
 
+async function hashPassword(password) {
+  const msgBuffer = new TextEncoder().encode(password);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const MOCK_USERS = [
   {
     id: "u1",
@@ -18,7 +25,8 @@ const MOCK_USERS = [
     role: "scout",
     avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
     stats: { vectorPoints: 4250, rank: "Bug Hunter II", bugsSubmitted: 42, accuracy: 94, gamesWon: 12 },
-    tier: "gold"
+    tier: "gold",
+    passwordHash: "937e8d5fbb48bd4949536cd65b8d35c426b80d2f830c5c308e2cdec422ae2244" // test1234
   },
   {
     id: "u2",
@@ -27,7 +35,8 @@ const MOCK_USERS = [
     role: "architect",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
     stats: { vectorPoints: 8500, rank: "Code Architect", bugsSubmitted: 0, accuracy: 100, gamesWon: 5 },
-    tier: "platinum"
+    tier: "platinum",
+    passwordHash: "ac9689e2272427085e35b9d3e3e8bed88cb3434828b43b86fc0596cad4c6e270" // admin1234
   }
 ];
 
@@ -150,12 +159,15 @@ const AppProvider = ({ children }) => {
     // Sound effects would be played here
   }, [soundEnabled]);
 
-  const login = useCallback((email, password) => {
+  const login = useCallback(async (email, password) => {
     const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
     if (found) {
-      setUser(found);
-      playSound('login');
-      return { success: true };
+      const hash = await hashPassword(password);
+      if (found.passwordHash === hash) {
+        setUser(found);
+        playSound('login');
+        return { success: true };
+      }
     }
     return { success: false, error: "Access denied. Invalid credentials." };
   }, [playSound]);
@@ -301,7 +313,7 @@ const AuthScreen = () => {
     setLoading(true);
     
     await new Promise(r => setTimeout(r, 800)); // Simulate network
-    const result = login(email, password);
+    const result = await login(email, password);
     
     if (!result.success) {
       setError(result.error);
