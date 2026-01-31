@@ -492,6 +492,7 @@ const Sidebar = ({ currentView }) => {
               onClick={() => navigate(item.path)}
               whileHover={{ x: 4 }}
               whileTap={{ scale: 0.98 }}
+              aria-current={isActive ? 'page' : undefined}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                 isActive 
                   ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' 
@@ -536,6 +537,7 @@ const Sidebar = ({ currentView }) => {
           <motion.button
             onClick={() => setSoundEnabled(!soundEnabled)}
             whileTap={{ scale: 0.9 }}
+            aria-label={soundEnabled ? "Mute sound" : "Unmute sound"}
             className="flex-1 flex items-center justify-center gap-2 py-2 text-xs text-slate-400 hover:text-white transition-colors"
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -733,6 +735,7 @@ const MissionsPage = () => {
           <input
             type="text"
             placeholder="Search missions..."
+            aria-label="Search missions"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="cyber-input w-full pl-10"
@@ -836,6 +839,7 @@ const MissionDetail = () => {
           onClick={() => navigate(-1)}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          aria-label="Go back"
           className="absolute top-6 left-6 w-10 h-10 bg-black/50 backdrop-blur rounded-lg flex items-center justify-center text-white hover:bg-black/70 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -1058,6 +1062,7 @@ const ReportAnomaly = () => {
             onClick={() => navigate(-1)}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            aria-label="Go back"
             className="w-10 h-10 bg-surface rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
