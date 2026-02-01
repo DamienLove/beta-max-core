@@ -244,7 +244,7 @@ const CyberBorder = ({ children, className = "", color = "cyan" }) => (
   </div>
 );
 
-const StatCard = ({ icon: IconComp, label, value, color = "cyan", trend }) => (
+const StatCard = React.memo(({ icon: IconComp, label, value, color = "cyan", trend }) => (
   <motion.div 
     whileHover={{ scale: 1.02, y: -2 }}
     className="cyber-panel rounded-xl p-5 stat-card"
@@ -265,9 +265,9 @@ const StatCard = ({ icon: IconComp, label, value, color = "cyan", trend }) => (
       {typeof value === 'number' ? value.toLocaleString() : value}
     </p>
   </motion.div>
-);
+));
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = React.memo(({ status }) => {
   const styles = {
     Alpha: "badge-red",
     Beta: "badge-cyan",
@@ -283,7 +283,7 @@ const StatusBadge = ({ status }) => {
     Low: "bg-blue-500 text-white"
   };
   return <span className={`badge ${styles[status] || 'badge-cyan'}`}>{status}</span>;
-};
+});
 
 // ============== AUTH SCREEN ==============
 
@@ -702,6 +702,50 @@ const Dashboard = () => {
 
 // ============== MISSIONS PAGE ==============
 
+const MissionCard = React.memo(({ project, index }) => {
+  const navigate = useNavigate();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.05 * index }}
+      whileHover={{ y: -4 }}
+      onClick={() => navigate(`/mission/${project.id}`)}
+      className="cyber-panel rounded-xl overflow-hidden cursor-pointer group"
+      data-testid={`mission-card-${project.id}`}
+    >
+    <div className="relative h-40 overflow-hidden">
+      <img
+        src={project.imageUrl}
+        alt={project.name}
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent" />
+      <div className="absolute top-3 left-3 flex gap-2">
+        <StatusBadge status={project.status} />
+        {project.isOfficial && <span className="badge badge-cyan"><Shield className="w-3 h-3 mr-1" /> Official</span>}
+      </div>
+    </div>
+      <div className="p-5">
+        <h3 className="text-lg text-white font-bold mb-2 group-hover:text-cyan-400 transition-colors">{project.name}</h3>
+        <p className="text-xs text-slate-400 mb-4 line-clamp-2">{project.description}</p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {project.features.slice(0, 3).map(f => (
+            <span key={f} className="text-[10px] px-2 py-1 bg-white/5 rounded text-slate-400">{f}</span>
+          ))}
+        </div>
+        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2 text-slate-500 text-xs">
+            <User className="w-4 h-4" />
+            {project.enrolledUsers} scouts
+          </div>
+          <span className="text-amber-400 font-bold font-mono">${project.payout}/bug</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+});
+
 const MissionsPage = () => {
   const navigate = useNavigate();
   const { projects } = useApp();
@@ -759,45 +803,11 @@ const MissionsPage = () => {
       {/* Projects Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredProjects.map((project, i) => (
-          <motion.div
+          <MissionCard
             key={project.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 * i }}
-            whileHover={{ y: -4 }}
-            onClick={() => navigate(`/mission/${project.id}`)}
-            className="cyber-panel rounded-xl overflow-hidden cursor-pointer group"
-            data-testid={`mission-card-${project.id}`}
-          >
-            <div className="relative h-40 overflow-hidden">
-              <img 
-                src={project.imageUrl} 
-                alt={project.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent" />
-              <div className="absolute top-3 left-3 flex gap-2">
-                <StatusBadge status={project.status} />
-                {project.isOfficial && <span className="badge badge-cyan"><Shield className="w-3 h-3 mr-1" /> Official</span>}
-              </div>
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg text-white font-bold mb-2 group-hover:text-cyan-400 transition-colors">{project.name}</h3>
-              <p className="text-xs text-slate-400 mb-4 line-clamp-2">{project.description}</p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.features.slice(0, 3).map(f => (
-                  <span key={f} className="text-[10px] px-2 py-1 bg-white/5 rounded text-slate-400">{f}</span>
-                ))}
-              </div>
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex items-center gap-2 text-slate-500 text-xs">
-                  <User className="w-4 h-4" />
-                  {project.enrolledUsers} scouts
-                </div>
-                <span className="text-amber-400 font-bold font-mono">${project.payout}/bug</span>
-              </div>
-            </div>
-          </motion.div>
+            project={project}
+            index={i}
+          />
         ))}
       </div>
     </div>

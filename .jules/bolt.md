@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-05-27 - Inline Handlers Defeat Memoization
+**Learning:** Even with `React.memo`, passing an inline arrow function prop (e.g., `onClick={() => navigate(...)}`) causes the component to re-render every time because the function reference changes.
+**Action:** Use hooks (like `useNavigate`) directly inside the memoized component for navigation, or pass stable callback references using `useCallback`.
