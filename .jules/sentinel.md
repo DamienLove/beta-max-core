@@ -41,3 +41,8 @@
 **Vulnerability:** The `users` collection allowed any authenticated user to write to their own document (`allow write: if isOwner(userId);`), which implicitly included the ability to change the `role` field (e.g., from 'tester' to 'developer'), leading to privilege escalation.
 **Learning:** Generic `write` permissions are dangerous for user profiles where sensitive claims (like roles or credits) are stored alongside editable profile data (like names). Also, when splitting `write` into `create`/`update`, great care must be taken to handle missing fields in existing documents using `resource.data.get()` to avoid locking users out of updates.
 **Prevention:** Split `write` into specific operations. Explicitly validate that sensitive fields are not present in the `request.resource.data` or match the existing value during updates. Use `.get()` with defaults to handle schema evolution safely.
+
+## 2026-02-28 - Insecure Mock Authentication
+**Vulnerability:** The `login` function in the frontend accepted any password because it only verified the email address against `MOCK_USERS`, ignoring the password field entirely.
+**Learning:** Mock implementations often cut corners (like skipping password checks) which can be disastrous if the mock logic is not clearly isolated or if it's used as a base for real implementation. It teaches developers that "input validation is optional" in this context.
+**Prevention:** Even in mock/prototype code, implement basic validation logic. If storing passwords, use hashes (even if simple) and verify them. Never leave "return true" stubs for authentication.
