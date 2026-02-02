@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-03-05 - Dependent State Double Renders
+**Learning:** Using `useEffect` to sync dependent state (e.g. updating `version` when `project` changes) triggers a second render immediately after the first, causing a "waterfall" of renders.
+**Action:** Move the synchronization logic directly into the event handler that triggers the change (e.g. `handleProjectChange`), updating both states synchronously.

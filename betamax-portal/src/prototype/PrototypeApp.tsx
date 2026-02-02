@@ -754,12 +754,16 @@ const FeedbackForm = () => {
     
     // Initial state setup based on location state (entry point)
     const preSelectedProjectId = location.state?.projectId || projects[0].id;
+    // Bolt: Find initial project to set correct version immediately
+    const initialProject = projects.find(p => p.id === preSelectedProjectId) || projects[0];
+    const initialVersion = initialProject.versions.find(v => v.isCurrent)?.version || '';
+
     const [projectId, setProjectId] = useState(preSelectedProjectId);
     const [type, setType] = useState<'Bug' | 'Suggestion'>('Bug');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [severity, setSeverity] = useState<'Low' | 'Medium' | 'High' | 'Critical'>('Low');
-    const [version, setVersion] = useState('');
+    const [version, setVersion] = useState(initialVersion);
     const [attachments, setAttachments] = useState<string[]>([]); // Mock logic
 
     const isValid = title.trim().length > 0 && description.trim().length > 0;
@@ -771,20 +775,21 @@ const FeedbackForm = () => {
 
     // Optimized: Stable handlers for selectors to prevent re-renders in child components
     const handleProjectChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-        setProjectId(e.target.value);
-    }, []);
+        const newProjectId = e.target.value;
+        setProjectId(newProjectId);
+        // Bolt: Update version synchronously to avoid useEffect re-render
+        const newProject = projects.find(p => p.id === newProjectId);
+        const currentVer = newProject?.versions.find(v => v.isCurrent);
+        if (currentVer) {
+            setVersion(currentVer.version);
+        }
+    }, [projects]);
 
     const handleVersionChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         setVersion(e.target.value);
     }, []);
 
     const project = projects.find(p => p.id === projectId) || projects[0];
-    
-    useEffect(() => {
-        // Set default version to current version of selected project
-        const current = project.versions.find(v => v.isCurrent);
-        if (current) setVersion(current.version);
-    }, [project]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
