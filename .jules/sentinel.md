@@ -41,3 +41,8 @@
 **Vulnerability:** The `users` collection allowed any authenticated user to write to their own document (`allow write: if isOwner(userId);`), which implicitly included the ability to change the `role` field (e.g., from 'tester' to 'developer'), leading to privilege escalation.
 **Learning:** Generic `write` permissions are dangerous for user profiles where sensitive claims (like roles or credits) are stored alongside editable profile data (like names). Also, when splitting `write` into `create`/`update`, great care must be taken to handle missing fields in existing documents using `resource.data.get()` to avoid locking users out of updates.
 **Prevention:** Split `write` into specific operations. Explicitly validate that sensitive fields are not present in the `request.resource.data` or match the existing value during updates. Use `.get()` with defaults to handle schema evolution safely.
+
+## 2025-05-23 - Mock Authentication Bypass
+**Vulnerability:** The main application's mock login function in `App.jsx` verified the email address but completely ignored the password argument, allowing login with any password.
+**Learning:** When implementing "mock" auth for MVPs or demos, developers often skip the password check to save time (avoiding hashing/state), intending to "fix it later". This logic often persists into higher fidelity versions or production-adjacent environments.
+**Prevention:** Implement "Real Mocking" - use standard crypto libraries (like `crypto.subtle`) even in mocks to simulate real behavior (hashing, verifying) rather than skipping checks. If a password field exists, it must be checked.
