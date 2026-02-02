@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-03-05 - Inline Randomness in Render
+**Learning:** Calculating random values (e.g., `Math.random()` for animation styles) directly in the component body causes them to regenerate on every re-render (like typing in a form), causing animations to jitter or reset unexpectedly.
+**Action:** Extract components using random values into `React.memo` or use `useMemo` to ensure values remain stable across parent re-renders.
