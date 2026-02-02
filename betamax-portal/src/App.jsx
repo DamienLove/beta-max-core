@@ -244,7 +244,7 @@ const CyberBorder = ({ children, className = "", color = "cyan" }) => (
   </div>
 );
 
-const StatCard = ({ icon: IconComp, label, value, color = "cyan", trend }) => (
+const StatCard = React.memo(({ icon: IconComp, label, value, color = "cyan", trend }) => (
   <motion.div 
     whileHover={{ scale: 1.02, y: -2 }}
     className="cyber-panel rounded-xl p-5 stat-card"
@@ -265,9 +265,9 @@ const StatCard = ({ icon: IconComp, label, value, color = "cyan", trend }) => (
       {typeof value === 'number' ? value.toLocaleString() : value}
     </p>
   </motion.div>
-);
+));
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = React.memo(({ status }) => {
   const styles = {
     Alpha: "badge-red",
     Beta: "badge-cyan",
@@ -283,9 +283,34 @@ const StatusBadge = ({ status }) => {
     Low: "bg-blue-500 text-white"
   };
   return <span className={`badge ${styles[status] || 'badge-cyan'}`}>{status}</span>;
-};
+});
 
 // ============== AUTH SCREEN ==============
+
+const AuthBackground = React.memo(() => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(20)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
+        style={{
+          left: `${Math.random() * 100}%`,
+          height: `${100 + Math.random() * 200}px`,
+        }}
+        animate={{
+          y: ['-100%', '100vh'],
+          opacity: [0, 1, 0]
+        }}
+        transition={{
+          duration: 3 + Math.random() * 4,
+          repeat: Infinity,
+          delay: Math.random() * 5,
+          ease: "linear"
+        }}
+      />
+    ))}
+  </div>
+));
 
 const AuthScreen = () => {
   const { login } = useApp();
@@ -314,28 +339,7 @@ const AuthScreen = () => {
       <div className="crt-overlay" />
       
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
-            style={{
-              left: `${Math.random() * 100}%`,
-              height: `${100 + Math.random() * 200}px`,
-            }}
-            animate={{
-              y: ['-100%', '100vh'],
-              opacity: [0, 1, 0]
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear"
-            }}
-          />
-        ))}
-      </div>
+      <AuthBackground />
 
       <motion.div 
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -448,17 +452,17 @@ const AuthScreen = () => {
 
 // ============== SIDEBAR ==============
 
+const navItems = [
+  { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
+  { id: 'missions', icon: Target, label: 'Missions', path: '/missions' },
+  { id: 'external', icon: Globe, label: 'External Betas', path: '/external' },
+  { id: 'terminal', icon: TerminalIcon, label: 'Terminal', path: '/terminal' },
+  { id: 'arcade', icon: Gamepad2, label: 'Arcade', path: '/arcade' },
+];
+
 const Sidebar = ({ currentView }) => {
   const navigate = useNavigate();
   const { user, logout, soundEnabled, setSoundEnabled } = useApp();
-
-  const navItems = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
-    { id: 'missions', icon: Target, label: 'Missions', path: '/missions' },
-    { id: 'external', icon: Globe, label: 'External Betas', path: '/external' },
-    { id: 'terminal', icon: TerminalIcon, label: 'Terminal', path: '/terminal' },
-    { id: 'arcade', icon: Gamepad2, label: 'Arcade', path: '/arcade' },
-  ];
 
   return (
     <motion.aside 

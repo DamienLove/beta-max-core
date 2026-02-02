@@ -1,0 +1,50 @@
+
+> beta-max@0.0.0 dev /app/betamax-portal
+> vite --host 0.0.0.0 --port 3000
+
+
+  ROLLDOWN-VITE v7.2.5  ready in 239 ms
+
+  ➜  Local:   http://localhost:3000/
+  ➜  Network: http://192.168.0.2:3000/
+3:08:04 PM [vite] (client) Pre-transform error: Expected `,` or `)` but found `;`
+  Plugin: vite:oxc
+  File: /app/betamax-portal/src/App.jsx:268:1
+  `,` or `)` expected
+  266 |      </p>
+  267 |    </motion.div>
+  268 |  );
+      |   ^
+  269 |
+  270 |  const StatusBadge = React.memo(({ status }) => {
+  Opened here
+  245 |  );
+  246 |
+  247 |  const StatCard = React.memo(({ icon: IconComp, label, value, color = "cyan", trend }) => (
+      |                             ^
+  248 |    <motion.div
+  249 |      whileHover={{ scale: 1.02, y: -2 }}
+3:08:04 PM [vite] Internal server error: Expected `,` or `)` but found `;`
+  Plugin: vite:oxc
+  File: /app/betamax-portal/src/App.jsx:268:1
+  `,` or `)` expected
+  266 |      </p>
+  267 |    </motion.div>
+  268 |  );
+      |   ^
+  269 |
+  270 |  const StatusBadge = React.memo(({ status }) => {
+  Opened here
+  245 |  );
+  246 |
+  247 |  const StatCard = React.memo(({ icon: IconComp, label, value, color = "cyan", trend }) => (
+      |                             ^
+  248 |    <motion.div
+  249 |      whileHover={{ scale: 1.02, y: -2 }}
+      at transformWithOxc (file:///app/betamax-portal/node_modules/.pnpm/rolldown-vite@7.2.5_@types+node@25.0.8_jiti@2.6.1/node_modules/rolldown-vite/dist/node/chunks/node.js:5148:19)
+      at TransformPluginContext.transform (file:///app/betamax-portal/node_modules/.pnpm/rolldown-vite@7.2.5_@types+node@25.0.8_jiti@2.6.1/node_modules/rolldown-vite/dist/node/chunks/node.js:5227:26)
+      at EnvironmentPluginContainer.transform (file:///app/betamax-portal/node_modules/.pnpm/rolldown-vite@7.2.5_@types+node@25.0.8_jiti@2.6.1/node_modules/rolldown-vite/dist/node/chunks/node.js:30468:51)
+      at async loadAndTransform (file:///app/betamax-portal/node_modules/.pnpm/rolldown-vite@7.2.5_@types+node@25.0.8_jiti@2.6.1/node_modules/rolldown-vite/dist/node/chunks/node.js:21586:26)
+      at async viteTransformMiddleware (file:///app/betamax-portal/node_modules/.pnpm/rolldown-vite@7.2.5_@types+node@25.0.8_jiti@2.6.1/node_modules/rolldown-vite/dist/node/chunks/node.js:26148:20)
+3:09:03 PM [vite] (client) hmr update /src/index.css
+ ELIFECYCLE  Command failed with exit code 143.
