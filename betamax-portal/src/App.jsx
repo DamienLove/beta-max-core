@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate, useLocation, Navigate, useParams, Link } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bug, Trophy, Zap, Terminal as TerminalIcon, User, LogOut, Plus, ChevronRight, 
-  Search, Globe, Gamepad2, Home, Target, Send, ArrowLeft, Eye, Clock, Star,
+  Search, Globe, Gamepad2, Home, Target, Send, ArrowLeft, Eye, EyeOff, Clock, Star,
   Sparkles, Shield, Award, TrendingUp, Activity, AlertTriangle, Check, X,
   Play, Pause, RotateCcw, Volume2, VolumeX
 } from 'lucide-react';
@@ -292,6 +292,7 @@ const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -384,10 +385,11 @@ const AuthScreen = () => {
           </AnimatePresence>
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <label htmlFor="auth-email" className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Identity_ID
             </label>
             <input
+              id="auth-email"
               type="email"
               required
               value={email}
@@ -399,18 +401,29 @@ const AuthScreen = () => {
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <label htmlFor="auth-password" className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Access_Key
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="cyber-input w-full"
-              placeholder="••••••••••"
-              data-testid="password-input"
-            />
+            <div className="relative">
+              <input
+                id="auth-password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="cyber-input w-full pr-10"
+                placeholder="••••••••••"
+                data-testid="password-input"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <motion.button
