@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-03-04 - Static Data Re-allocation
+**Learning:** Defining static data arrays (like navigation config) inside a component function creates new references on every render, triggering garbage collection and breaking referential equality checks for children.
+**Action:** Move static data definitions outside the component scope (module level) or wrap them in `useMemo` if they depend on props.
