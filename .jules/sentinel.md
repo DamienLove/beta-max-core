@@ -41,3 +41,8 @@
 **Vulnerability:** The `users` collection allowed any authenticated user to write to their own document (`allow write: if isOwner(userId);`), which implicitly included the ability to change the `role` field (e.g., from 'tester' to 'developer'), leading to privilege escalation.
 **Learning:** Generic `write` permissions are dangerous for user profiles where sensitive claims (like roles or credits) are stored alongside editable profile data (like names). Also, when splitting `write` into `create`/`update`, great care must be taken to handle missing fields in existing documents using `resource.data.get()` to avoid locking users out of updates.
 **Prevention:** Split `write` into specific operations. Explicitly validate that sensitive fields are not present in the `request.resource.data` or match the existing value during updates. Use `.get()` with defaults to handle schema evolution safely.
+
+## 2026-05-24 - Client-Side Authentication Bypass
+**Vulnerability:** The login function in `App.jsx` validated the email address but completely ignored the password, allowing any user to log in by providing a valid email address with any password.
+**Learning:** In client-side logic (especially mocks or prototypes), developers might mock the "happy path" (successful login) without implementing the actual credential verification, assuming the backend would handle it. When this logic is used in a standalone frontend (or if the backend validation is missing), it leads to total compromise.
+**Prevention:** Always verify credentials. For client-side mocks, use cryptographic hashes (e.g., SHA-256) instead of plaintext passwords, and ensure the comparison logic is actually implemented and tested against invalid inputs.
