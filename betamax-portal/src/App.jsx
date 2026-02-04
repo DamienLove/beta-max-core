@@ -287,6 +287,41 @@ const StatusBadge = ({ status }) => {
 
 // ============== AUTH SCREEN ==============
 
+const AuthBackground = React.memo(() => {
+  const lines = useMemo(() => [...Array(20)].map((_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    height: `${100 + Math.random() * 200}px`,
+    duration: 3 + Math.random() * 4,
+    delay: Math.random() * 5
+  })), []);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {lines.map((line) => (
+        <motion.div
+          key={line.id}
+          className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
+          style={{
+            left: line.left,
+            height: line.height,
+          }}
+          animate={{
+            y: ['-100%', '100vh'],
+            opacity: [0, 1, 0]
+          }}
+          transition={{
+            duration: line.duration,
+            repeat: Infinity,
+            delay: line.delay,
+            ease: "linear"
+          }}
+        />
+      ))}
+    </div>
+  );
+});
+
 const AuthScreen = () => {
   const { login } = useApp();
   const [isLogin, setIsLogin] = useState(true);
@@ -314,28 +349,7 @@ const AuthScreen = () => {
       <div className="crt-overlay" />
       
       {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-px bg-gradient-to-b from-cyan-500/0 via-cyan-500/50 to-cyan-500/0"
-            style={{
-              left: `${Math.random() * 100}%`,
-              height: `${100 + Math.random() * 200}px`,
-            }}
-            animate={{
-              y: ['-100%', '100vh'],
-              opacity: [0, 1, 0]
-            }}
-            transition={{
-              duration: 3 + Math.random() * 4,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-              ease: "linear"
-            }}
-          />
-        ))}
-      </div>
+      <AuthBackground />
 
       <motion.div 
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
