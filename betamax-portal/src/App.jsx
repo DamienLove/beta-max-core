@@ -537,6 +537,8 @@ const Sidebar = ({ currentView }) => {
             onClick={() => setSoundEnabled(!soundEnabled)}
             whileTap={{ scale: 0.9 }}
             className="flex-1 flex items-center justify-center gap-2 py-2 text-xs text-slate-400 hover:text-white transition-colors"
+            aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+            title={soundEnabled ? "Mute sound" : "Enable sound"}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </motion.button>
@@ -837,6 +839,8 @@ const MissionDetail = () => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="absolute top-6 left-6 w-10 h-10 bg-black/50 backdrop-blur rounded-lg flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+          aria-label="Go back"
+          title="Go back"
         >
           <ArrowLeft className="w-5 h-5" />
         </motion.button>
@@ -1059,6 +1063,8 @@ const ReportAnomaly = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             className="w-10 h-10 bg-surface rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            aria-label="Go back"
+            title="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
           </motion.button>
