@@ -448,17 +448,40 @@ const AuthScreen = () => {
 
 // ============== SIDEBAR ==============
 
+const SidebarItem = React.memo(({ item, isActive, navigate }) => (
+  <motion.button
+    onClick={() => navigate(item.path)}
+    whileHover={{ x: 4 }}
+    whileTap={{ scale: 0.98 }}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+      isActive
+        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'
+        : 'text-slate-400 hover:text-white hover:bg-white/5'
+    }`}
+    data-testid={`nav-${item.id}`}
+  >
+    <item.icon className="w-5 h-5" />
+    <span className="text-sm font-medium">{item.label}</span>
+    {isActive && (
+      <motion.div
+        layoutId="activeIndicator"
+        className="ml-auto w-1.5 h-1.5 bg-cyan-400 rounded-full"
+      />
+    )}
+  </motion.button>
+));
+
+const NAV_ITEMS = [
+  { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
+  { id: 'missions', icon: Target, label: 'Missions', path: '/missions' },
+  { id: 'external', icon: Globe, label: 'External Betas', path: '/external' },
+  { id: 'terminal', icon: TerminalIcon, label: 'Terminal', path: '/terminal' },
+  { id: 'arcade', icon: Gamepad2, label: 'Arcade', path: '/arcade' },
+];
+
 const Sidebar = ({ currentView }) => {
   const navigate = useNavigate();
   const { user, logout, soundEnabled, setSoundEnabled } = useApp();
-
-  const navItems = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
-    { id: 'missions', icon: Target, label: 'Missions', path: '/missions' },
-    { id: 'external', icon: Globe, label: 'External Betas', path: '/external' },
-    { id: 'terminal', icon: TerminalIcon, label: 'Terminal', path: '/terminal' },
-    { id: 'arcade', icon: Gamepad2, label: 'Arcade', path: '/arcade' },
-  ];
 
   return (
     <motion.aside 
@@ -484,32 +507,14 @@ const Sidebar = ({ currentView }) => {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map((item) => {
-          const isActive = currentView === item.id;
-          return (
-            <motion.button
-              key={item.id}
-              onClick={() => navigate(item.path)}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                isActive 
-                  ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' 
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-              data-testid={`nav-${item.id}`}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-sm font-medium">{item.label}</span>
-              {isActive && (
-                <motion.div 
-                  layoutId="activeIndicator"
-                  className="ml-auto w-1.5 h-1.5 bg-cyan-400 rounded-full"
-                />
-              )}
-            </motion.button>
-          );
-        })}
+        {NAV_ITEMS.map((item) => (
+          <SidebarItem
+            key={item.id}
+            item={item}
+            isActive={currentView === item.id}
+            navigate={navigate}
+          />
+        ))}
       </nav>
 
       {/* User Profile */}
