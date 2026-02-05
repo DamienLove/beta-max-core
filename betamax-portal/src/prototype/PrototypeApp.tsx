@@ -23,6 +23,20 @@ const MOCK_USERS: User[] = [
     }
 ];
 
+// SECURITY: Hashed passwords for mock authentication
+const MOCK_CREDENTIALS: Record<string, string> = {
+    "alex@test.com": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8", // "password"
+    "sarah@betamax.com": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918" // "admin"
+};
+
+async function hashPassword(password: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hash));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const INITIAL_PROJECTS: Project[] = [
     {
         id: "p1",
@@ -74,7 +88,7 @@ const INITIAL_FEEDBACK: FeedbackItem[] = [
 
 interface AppContextType {
     user: User | null;
-    login: (email: string) => boolean;
+    login: (email: string, password: string) => Promise<boolean>;
     logout: () => void;
     projects: Project[];
     feedback: FeedbackItem[];
@@ -91,15 +105,27 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
     const [feedback, setFeedback] = useState<FeedbackItem[]>(INITIAL_FEEDBACK);
 
-    const login = useCallback((email: string) => {
+    const login = useCallback(async (email: string, password: string) => {
         // SECURITY: Strict email validation against mock users.
-        const found = MOCK_USERS.find(u => u.email === email);
-        if (found) {
-            setUser(found);
+        const foundUser = MOCK_USERS.find(u => u.email === email);
+        if (!foundUser) {
+            console.warn(`Security: Login failed for ${email}. Email not found.`);
+            return false;
+        }
+
+        // SECURITY: Validate password hash to prevent unauthorized access
+        const storedHash = MOCK_CREDENTIALS[email];
+        if (!storedHash) {
+            console.warn(`Security: No credentials found for ${email}.`);
+            return false;
+        }
+
+        const inputHash = await hashPassword(password);
+        if (inputHash === storedHash) {
+            setUser(foundUser);
             return true;
         } else {
-            console.warn(`Security: Login failed for ${email}. Email not found in allowed mock users.`);
-            // Intentionally do not set user if not found, keeping them on AuthScreen.
+            console.warn(`Security: Invalid password for ${email}.`);
             return false;
         }
     }, []);
@@ -224,10 +250,10 @@ const AuthScreen = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        const success = login(email);
+        const success = await login(email, password);
         if (!success) {
             setError("Invalid credentials. Access restricted to authorized beta testers.");
         }
