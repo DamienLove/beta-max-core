@@ -21,3 +21,7 @@
 ## 2026-02-14 - Layout Occlusion by Floating Elements
 **Learning:** Fixed bottom navigation elements and FABs can easily obscure the last item in a scrollable list, rendering actions (like buttons in empty states) inaccessible. Standard padding (e.g., `pb-24`) may be insufficient when stacking multiple fixed elements.
 **Action:** When designing near the bottom edge of a viewport with floating overlays, always verify the bottom padding allows for over-scrolling so the last interactive element clears all overlays. Increased container padding to `pb-32` resolved this.
+
+## 2026-02-14 - Semantic Selection Controls
+**Learning:** Visual selection toggles implemented as plain buttons lack the semantic meaning of "one-of-many" choice, forcing screen reader users to guess the control's behavior.
+**Action:** Converted button groups to `role="radiogroup"` containers with `role="radio"` buttons and `aria-checked` states, effectively communicating the mutual exclusivity and current selection state.
