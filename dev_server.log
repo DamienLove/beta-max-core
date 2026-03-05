@@ -1,0 +1,10 @@
+
+> beta-max@0.0.0 dev /app/betamax-portal
+> vite
+
+
+  ROLLDOWN-VITE v7.2.5  ready in 279 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+ ELIFECYCLE  Command failed with exit code 143.

@@ -21,3 +21,7 @@
 ## 2026-02-14 - Layout Occlusion by Floating Elements
 **Learning:** Fixed bottom navigation elements and FABs can easily obscure the last item in a scrollable list, rendering actions (like buttons in empty states) inaccessible. Standard padding (e.g., `pb-24`) may be insufficient when stacking multiple fixed elements.
 **Action:** When designing near the bottom edge of a viewport with floating overlays, always verify the bottom padding allows for over-scrolling so the last interactive element clears all overlays. Increased container padding to `pb-32` resolved this.
+
+## 2026-05-21 - Form Guidance & Accessibility
+**Learning:** Client-side validation that disables submit buttons without explicit "required" field indicators creates user frustration. Users shouldn't have to guess why a form is invalid.
+**Action:** Enforced a pattern of visually marking all required labels (e.g., with `*`) and added real-time character counts to open-ended text inputs to guide user expectations.
