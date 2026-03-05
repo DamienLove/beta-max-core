@@ -987,6 +987,19 @@ const NavigationWrapper = ({ children }: { children: React.ReactNode }) => {
 
 // --- ROOT COMPONENT ---
 
+// Optimized: Memoized to prevent re-renders of the router tree when unrelated context data (feedback/projects) changes
+const AuthenticatedApp = React.memo(() => (
+    <NavigationWrapper>
+        <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/project/:id" element={<ProjectDetail />} />
+            <Route path="/feedback/new" element={<FeedbackForm />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+    </NavigationWrapper>
+));
+
 const AppContent = () => {
     const { user } = useApp();
 
@@ -994,17 +1007,7 @@ const AppContent = () => {
         return <AuthScreen />;
     }
 
-    return (
-        <NavigationWrapper>
-            <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/project/:id" element={<ProjectDetail />} />
-                <Route path="/feedback/new" element={<FeedbackForm />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-        </NavigationWrapper>
-    );
+    return <AuthenticatedApp />;
 };
 
 const PrototypeApp = () => {

@@ -13,3 +13,7 @@
 ## 2025-03-04 - Unstable Callbacks Break Memoization
 **Learning:** Passing inline arrow functions (e.g., `onClick={() => navigate('/')}`) to memoized child components forces them to re-render every time the parent renders, defeating `React.memo`.
 **Action:** Pass stable primitives (like path strings) instead of callbacks where possible, or wrap callbacks in `useCallback`.
+
+## 2025-03-04 - Router Tree Re-renders on Context Update
+**Learning:** Consuming a global context (that contains frequently changing data) in a parent component that wraps the entire Router causes the entire route tree to re-render on every data update, even if the active route doesn't need that data.
+**Action:** Isolate the Router or Layout tree into a memoized component (e.g., `AuthenticatedApp`) that does NOT consume the volatile context, or split the Context into Auth (stable) and Data (volatile).
